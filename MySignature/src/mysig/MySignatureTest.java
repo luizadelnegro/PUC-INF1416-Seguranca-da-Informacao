@@ -10,14 +10,11 @@ import java.security.*;
 public class MySignatureTest {
     static final String HEADER = "" +
     "**************************************" +
-    "\tINF1416 - Segurança da informação\n" +
-    "Trabalho 1 - MySignature 2021-04-13\n" +
-    "Grupo: Luiza e Lucas\n" + 
-    "**************************************";
-
-    public static String toHex(byte[] bytes){
-        return String.format("%032x", new BigInteger(1, bytes));
-    }
+    "\tINF1416 - Segurança da informação\t" +
+    "**************************************\n" +
+    "\tTrabalho 1 - MySignature 2021-04-13\n" +
+    "\tGrupo: Luiza e Lucas\n" + 
+    "**************************************\n\n";
 
     public static void main(String[] args) throws Exception {
         
@@ -36,23 +33,27 @@ public class MySignatureTest {
 
         System.out.println("Enter text to digest: ");
         byte[] textSnippet = sc.nextLine().getBytes("UTF8");
-        
         sig.update(textSnippet);
 
+        System.out.println("Generating keys: ");
         keys.initialize(2048);
         KeyPair myKeys = keys.genKeyPair();
-
-        System.out.println("Criando assinatura");
-        sig.initSign(myKeys.getPrivate());
-        byte[] firstSignature = sig.sign();
-
-        System.out.println("Message digest:" + MySignatureTest.toHex(sig.getDigest()));
-        System.out.println("Assinatura digital:" + MySignatureTest.toHex(firstSignature));
-        System.out.println("Verificando assinatura");
+        System.out.println("-----------------------------");
+        System.out.println("Public key: " + Util.toHex(myKeys.getPublic().getEncoded()));
+        System.out.println("Private key: " + Util.toHex(myKeys.getPrivate().getEncoded()));
+        System.out.println("-----------------------------\n");
         
-        sig.update(textSnippet);    // Para verificar re-insere o texto para o digest       
+
+        System.out.println("Making digital signature");
+        sig.initSign(myKeys.getPrivate());
+        byte[] firstSigned = sig.sign();
+        
+        System.out.println("Digital signature:" + Util.toHex(firstSigned));
+        System.out.println("\nVerificando assinatura");
+        
+        sig.update(textSnippet);    // Insert plain text again to verify -- IMPORTANT!       
         sig.initVerify(myKeys.getPublic());
-        if(sig.verify(firstSignature) == true) {
+        if(sig.verify(firstSigned)) {
             System.out.println("VERIFICADO!");
         }
         else {

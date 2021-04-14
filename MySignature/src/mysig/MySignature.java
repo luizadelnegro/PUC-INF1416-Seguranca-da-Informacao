@@ -7,17 +7,22 @@ import java.util.*;
 public class MySignature {
     private MessageDigest digest;
     private Cipher cipherMethod;
+
+    private static final Map<String,String> mapAlgorithmName = Map.of("SHA1", "SHA-1",
+        "SHA256", "SHA-256",
+        "SHA512", "SHA-512",
+        "MD5", "MD5"
+    );
     
     public static MySignature getInstance (String instanceType) throws NoSuchAlgorithmException, NoSuchPaddingException {
         MySignature instance = new MySignature();
-        instance.digest =  MessageDigest.getInstance(instanceType.split("with")[0]);
+        if(!mapAlgorithmName.containsKey(instanceType.split("with")[0])) {
+            throw new NoSuchAlgorithmException();
+        }
+        instance.digest =  MessageDigest.getInstance(mapAlgorithmName.get(instanceType.split("with")[0]));
         instance.cipherMethod = Cipher.getInstance(instanceType.split("with")[1]);
         return instance;
 	}
-
-    public byte[] getDigest() {
-        return this.digest.digest();
-    }
 
     public void initSign(PrivateKey key) throws InvalidKeyException {		
         this.cipherMethod.init(Cipher.ENCRYPT_MODE, key);
@@ -36,6 +41,10 @@ public class MySignature {
     }
 
     public boolean verify(byte[] signature) throws IllegalBlockSizeException, BadPaddingException {
-        return Arrays.equals(this.digest.digest(), this.cipherMethod.doFinal(signature));
+        byte[] d = this.digest.digest(); // Only for debugging
+        System.out.println("Digested expected:\t" + Util.toHex(d));  // Must update before with plain text
+        byte[] c = this.cipherMethod.doFinal(signature);
+        System.out.println("Decrypted:\t\t" + Util.toHex(c));
+        return Arrays.equals(d, c);
     }
 }
