@@ -41,10 +41,10 @@ public class MySignature {
     }
 
     public boolean verify(byte[] signature) throws IllegalBlockSizeException, BadPaddingException {
-        byte[] d = this.digest.digest(); // Only for debugging
-        System.out.println("Digested expected:\t" + Util.toHex(d));  // Must update before with plain text
+        byte[] d = this.digest.digest(); // Must update before with plain text -- IMPORTANT !!
+        System.out.println("Digested Expected:\t" + Util.toHex(d)); 
         byte[] c = this.cipherMethod.doFinal(signature);
-        System.out.println("Decrypted:\t\t" + Util.toHex(c));
+        System.out.println("Digest Decrypted:\t" + Util.toHex(c));
         return Arrays.equals(d, c);
     }
 }

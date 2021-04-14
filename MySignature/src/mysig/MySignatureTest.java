@@ -54,10 +54,10 @@ public class MySignatureTest {
         sig.update(textSnippet);    // Insert plain text again to verify -- IMPORTANT!       
         sig.initVerify(myKeys.getPublic());
         if(sig.verify(firstSigned)) {
-            System.out.println("VERIFICADO!");
+            System.out.println("\n\t\t\t\tVERIFICADO!");
         }
         else {
-            System.out.println("ERRO!");
+            System.out.println("\n\t\t\t\tERRO!");
         }
         sc.close();
     }
