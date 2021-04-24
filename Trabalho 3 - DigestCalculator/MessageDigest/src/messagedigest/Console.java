@@ -1,7 +1,0 @@
-package messagedigest;
-
-public class Console {
-    public static void main(String[] args) throws Exception {
-        System.out.println("Hello, World!");
-    }
-}
