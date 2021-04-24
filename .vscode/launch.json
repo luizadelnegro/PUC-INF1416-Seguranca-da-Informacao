@@ -16,7 +16,7 @@
             "request": "launch",
             "mainClass": "DigestCalculator",
             "projectName": "PUC-INF1416-Seguranca-da-Informacao_468fa7df",
-            "args": "SHA-256 C:/Users/MOBILE/Documents/GitHub/PUC-INF1416-Seguranca-da-Informacao/Trabalho3-DigestCalculator/ArqDigest.txt C:/Users/MOBILE/Documents/GitHub/PUC-INF1416-Seguranca-da-Informacao/Trabalho3-DigestCalculator/arquivos-teste"
+            "args": "SHA1 C:/Users/MOBILE/Documents/GitHub/PUC-INF1416-Seguranca-da-Informacao/Trabalho3-DigestCalculator/ArqDigest.txt C:/Users/MOBILE/Documents/GitHub/PUC-INF1416-Seguranca-da-Informacao/Trabalho3-DigestCalculator/arquivos-teste"
         }
     ]
 }
