@@ -17,6 +17,10 @@ final class Arq  {
 
     private static HashMap<String, Arq> RegisteredArqs = new HashMap<String, Arq>();
 
+    public String get_name(){
+        return this.name;
+    }
+
     public void set_status(EnumStatus es) {
         this.status = es;
     }
@@ -61,7 +65,7 @@ final class Arq  {
 
     public static boolean colides(Arq a){
         for(String key : Arq.RegisteredArqs.keySet()) {
-            if(key != a.name) {
+            if(!key.equals(a.name)) {
                 // Nomes diferentes
                 if(Arq.RegisteredArqs.get(key).get_calculatedHash().equals(a.get_calculatedHash())) return true; // Mesmo hash
             }
@@ -131,13 +135,15 @@ public class DigestCalculator {
             if(expected != null)
                 arq.set_status(EnumStatus.NOT_OK);
         }
-        this.arqOnList.forEach((k,v) -> { // Verifica outra entrada com o mesmo hash no ArqList
-            if (k != fileName) {
-                if (v == calculated) {
+        for(String key : this.arqOnList.keySet()) {
+            if(!key.equals(arq.get_name())) {
+                // Nomes diferentes
+                if(this.arqOnList.get(key).equals(arq.get_calculatedHash())){
                     arq.set_status(EnumStatus.COLISION);
                 }
             }
-        });
+        }
+
         if(Arq.colides(arq)) {  // Verifica outro arquivo com mesmo hash calculado
             arq.set_status(EnumStatus.COLISION);
         }
