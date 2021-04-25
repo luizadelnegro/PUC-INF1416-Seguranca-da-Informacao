@@ -125,7 +125,7 @@ public class DigestCalculator {
 
     private void checkFile(String fileName) {
         Arq arq = Arq.get_arq(fileName);
-
+        if (arq.get_status() == EnumStatus.COLISION) return;
         String calculated = arq.get_calculatedHash();
         String expected = this.arqOnList.get(fileName);
         if(calculated.equals(expected)){
@@ -139,7 +139,9 @@ public class DigestCalculator {
             if(!key.equals(arq.get_name())) {
                 // Nomes diferentes
                 if(this.arqOnList.get(key).equals(arq.get_calculatedHash())){
+                    // Mesmo digest
                     arq.set_status(EnumStatus.COLISION);
+                    Arq.get_arq(key).set_status(EnumStatus.COLISION);
                 }
             }
         }
@@ -202,7 +204,8 @@ public class DigestCalculator {
             }
         }
         Set<String> allArqs = Arq.get_arqNames();
-        allArqs.forEach(fileName -> {this.checkFile(fileName);this.printOrSave(fileName);});
+        allArqs.forEach(fileName -> {this.checkFile(fileName);});
+        allArqs.forEach(fileName -> {this.printOrSave(fileName);});
         input.close();           
     }
 
