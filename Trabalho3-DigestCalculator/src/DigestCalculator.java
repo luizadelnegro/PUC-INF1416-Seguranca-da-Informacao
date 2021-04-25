@@ -1,5 +1,4 @@
 import java.security.*;
-import javax.crypto.*;
 import java.util.*;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -93,11 +92,12 @@ public class DigestCalculator {
     private String hashName;
     private String arqListPath;
 
-    private static final Map<String,String> mapAlgorithmName = Map.of("SHA1", "SHA-1",
-        "SHA256", "SHA-256",
-        "SHA512", "SHA-512",
-        "MD5", "MD5"
-    );
+    private static final Map<String,String> mapAlgorithmName = new HashMap<String, String>(){{
+        put("SHA1", "SHA-1");
+        put("SHA256", "SHA-256");
+        put("SHA512", "SHA-512");
+        put("MD5", "MD5");
+    }};
 
     public static String toHex(byte[] bytes){
         return String.format("%032x", new BigInteger(1, bytes));
