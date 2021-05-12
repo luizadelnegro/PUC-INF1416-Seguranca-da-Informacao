@@ -51,12 +51,14 @@ public class MySqlController {
                 isOpen = conn.isClosed();
             } catch (SQLException e) {
                 LOGGER.severe(e.getStackTrace().toString() + " " + e.getSQLState() + " " + e.getMessage());
+                isOpen = false;
             }
         }
         return isOpen;
     }
 
     public ResultSet run_select_statement(String query) throws SQLException {
+        openConnection();
         Statement stat = conn.createStatement();
         return stat.executeQuery(query);
 

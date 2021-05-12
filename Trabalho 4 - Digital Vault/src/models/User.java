@@ -1,29 +1,37 @@
 package models;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import controllers.ValidateDataBase;
+import controllers.MySqlController;
 
 public class User {
     
-    private String user_email;
+    private String userEmail;
     
-    private boolean fail_user = false;
+    private boolean validUser = false;
 
     private static final Logger LOGGER = Logger.getLogger(User.class.getName());
 
-    public User(String user_email){
+    public User(String userEmail){
+        this.userEmail = userEmail;
+        isEmailValid();
+    }
 
-        if (ValidateDataBase.EmailExists(user_email)) {
-            this.user_email = user_email;
-        }
-        else {
-            LOGGER.log(Level.WARNING, "User failed! Unknown email " + user_email);
-            this.fail_user = true;
+    private void isEmailValid() {
+        MySqlController mysqlsobj = MySqlController.getInstance();
+        try {
+            ResultSet results = mysqlsobj.run_select_statement("SELECT * FROM user WHERE email = '" + userEmail + "'");
+            
+            this.validUser = results.next();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, e.getStackTrace().toString() + " " + e.getSQLState() + " " + e.getMessage());
+            this.validUser = false;
         }
     }
 
     public boolean isValid() {
-        return ! this.fail_user;
+        return this.validUser;
     }
 }
