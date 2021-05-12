@@ -1,4 +1,4 @@
-package controllers;
+package models;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,7 +48,7 @@ public class PhoneticKeyBoard {
     }
 
     public void pressGroup(int i) {
-        System.out.println(String.join(",", randomKeys.get(i-1)));
+        LOGGER.log(Level.FINEST, String.join(",", randomKeys.get(i-1)));
         selectedKeys.add(randomKeys.get(i-1));
     }
 }

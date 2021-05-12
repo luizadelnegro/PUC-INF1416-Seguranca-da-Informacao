@@ -4,7 +4,7 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import controllers.PhoneticKeyBoard;
+import models.PhoneticKeyBoard;
 import models.User;
 
 public class Console {
@@ -20,16 +20,6 @@ public class Console {
 
     private static final Logger LOGGER = Logger.getLogger(Console.class.getName());
 
-    public static String getRandomPhonemesKeyBoard(int n) {
-        String[] randomPhonemes = PhoneticKeyBoard.getRandomPhonemes(6);
-        String keyBoard = "";
-        int i;
-        for(i = 0; i< n; i++) {
-            keyBoard += Integer.toString(i) + " = ";
-
-        }
-        return keyBoard;
-    }
     public static void main(String args[]) {
         int selectedOption = 0;
         
