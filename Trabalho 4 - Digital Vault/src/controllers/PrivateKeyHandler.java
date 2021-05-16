@@ -57,9 +57,10 @@ public class PrivateKeyHandler {
             cipherMethod.init(Cipher.DECRYPT_MODE, kg.generateKey());
             byte[] finalEn = cipherMethod.doFinal(this.encryptedKey);
             String b64 = new String(finalEn, StandardCharsets.UTF_8)
-                .replace("-----BEGIN PRIVATE KEY-----", "")
                 .replaceAll("\n", "")
+                .replace("-----BEGIN PRIVATE KEY-----", "")
                 .replace("-----END PRIVATE KEY-----", "");
+
             byte[] finalDe = Base64.getDecoder().decode(b64);
             keyspec = new PKCS8EncodedKeySpec(finalDe);
 

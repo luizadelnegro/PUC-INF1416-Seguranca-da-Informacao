@@ -14,9 +14,14 @@ import org.junit.jupiter.api.Test;
 
 public class PrivateKeyHandlerTest {
     
-    static PrivateKey getAdminPrivateKey() {
+    public static PrivateKey getAdminPrivateKey() {
         PrivateKeyHandler adminPrivateK = new PrivateKeyHandler("C:/Users/Lucas/Documents/GitHub/PUC-INF1416-Seguranca-da-Informacao/Trabalho 4 - Digital Vault/keys/admin-pkcs8-des.key");
         return adminPrivateK.getPrivateKey("admin");
+    }
+
+    public static PrivateKey getUserPrivateKey() {
+        PrivateKeyHandler adminPrivateK = new PrivateKeyHandler("C:/Users/Lucas/Documents/GitHub/PUC-INF1416-Seguranca-da-Informacao/Trabalho 4 - Digital Vault/keys/user01-pkcs8-des.key");
+        return adminPrivateK.getPrivateKey("user01");
     }
 
     @Test

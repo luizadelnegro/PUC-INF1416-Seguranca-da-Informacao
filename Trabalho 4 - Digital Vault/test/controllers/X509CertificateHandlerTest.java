@@ -26,6 +26,17 @@ public class X509CertificateHandlerTest {
         }
         return pubK;
     }
+    public static PublicKey getUserPublicKey() {
+        X509CertificateHandler adminCert = null;
+        PublicKey pubK = null;
+        try {
+            adminCert = new X509CertificateHandler("C:/Users/Lucas/Documents/GitHub/PUC-INF1416-Seguranca-da-Informacao/Trabalho 4 - Digital Vault/keys/user01-x509.crt");
+            pubK = adminCert.getPublicKey();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return pubK;
+    }
 
     @Test
     void testGetAdminPublicKeyFromCert() {
