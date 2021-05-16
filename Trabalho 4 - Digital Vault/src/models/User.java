@@ -31,7 +31,7 @@ public class User {
     private void isEmailValid() {
         MySqlController mysqlsobj = MySqlController.getInstance();
         try {
-            ResultSet results = mysqlsobj.run_select_statement("SELECT * FROM user WHERE email = '" + userEmail + "'");
+            ResultSet results = mysqlsobj.run_select_statement("SELECT * FROM Usuarios WHERE login_name = '" + userEmail + "'");
             
             this.validUser = results.next();
             

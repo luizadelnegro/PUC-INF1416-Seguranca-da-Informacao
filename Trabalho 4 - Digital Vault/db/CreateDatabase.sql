@@ -1,6 +1,6 @@
 CREATE TABLE Usuarios(
     id integer NOT NULL auto_increment,
-    email varchar(200),
+    login_name varchar(200),
     salt varchar(200),
     hash varchar(200),
     cert varchar(200),
@@ -24,8 +24,8 @@ CREATE TABLE Registros(
     id integer NOT NULL auto_increment,
     dttime datetime,
     userid integer,
-    arqname varchar(200)
-
+    arqname varchar(200),
+    PRIMARY KEY (id)
 );
 
 SET character_set_client = utf8;
@@ -34,7 +34,7 @@ SET character_set_results = utf8;
 SET collation_connection = utf8_general_ci;
 
 INSERT INTO Mensagens(id, mensagem)
-VALUES (
+VALUES
     (1001, 'Sistema iniciado.'),
     (1002, 'Sistema encerrado.'),
     (2001, 'Autenticação etapa 1 iniciada.'),
@@ -94,15 +94,15 @@ VALUES (
     (9002, 'Saída não liberada por falta de one-time password para <login_name>.'),
     (9003, 'Botão sair pressionado por <login_name>.'),
     (9004, 'Botão voltar de sair para o menu principal pressionado por <login_name>.')
-)
+;
 
-INSERT INTO user(id, email, salt, hash, cert, ct, blk)
+INSERT INTO Usuarios(id, login_name, salt, hash, cert, ct, blk)
 VALUES (
     1,
-    'lucasdamo1@gmail.com',
+    'user01@inf1416.puc-rio.br',
     '',
     '',
     '',
     '',
     ''
-)
+);
