@@ -11,7 +11,6 @@ public class User {
     private String userEmail;
     
     private boolean validUser = false;
-
     private static final Logger LOGGER = Logger.getLogger(User.class.getName());
 
     public User(String userEmail){
