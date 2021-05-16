@@ -101,7 +101,7 @@ VALUES (
     1,
     'user01@inf1416.puc-rio.br',
     '',
-    '',
+    'CABECADA',
     '',
     '',
     ''

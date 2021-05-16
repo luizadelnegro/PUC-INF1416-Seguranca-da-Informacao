@@ -59,6 +59,7 @@ public class Console {
                     keyBoard.randomizeKeys();
                 }
             }
+            //user01@inf1416.puc-rio.br
             System.out.println(" Senha selecionada : "+keyBoard.getSelectedPassword());//TODO APAGAR AQUI E NO MODEL USER -- APENaS PARA EBUG
             ArrayList<ArrayList<String>> password = keyBoard.getSelectedPassword();
             boolean isPasswordValid = user.getIsPasswordValid(password);

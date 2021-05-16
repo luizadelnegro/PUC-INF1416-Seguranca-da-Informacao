@@ -54,10 +54,10 @@ public class User {
     }
 
 
-    public  ArrayList<ArrayList<String>> getPossibilities ( ArrayList<ArrayList<String>> selectedPassword){//TODO TORNAR PRIVATE
+    private  ArrayList<String> getPossibilities ( ArrayList<ArrayList<String>> selectedPassword){
         ArrayList<ArrayList<String>> passwordPossibilities = new ArrayList();
         int j;
-        for( j = 0;j<(selectedPassword.size());j++){//cada linha da selected password      selectedPassword.size()
+        for( j = 0;j<(selectedPassword.size());j++){//cada linha da selected password
             ArrayList<String> currentRowOfSelectedPassword = new ArrayList<String>(selectedPassword.get(j));
 
             //System.out.println(" currentRowOfSelectedPassword: "+currentRowOfSelectedPassword);//OK
@@ -98,52 +98,54 @@ public class User {
         }
         
         System.out.println("size: "+passwordPossibilities.size());
+
+//transforma lista de arrays em lista de lista
+        ArrayList<String> resultPossibilities = new ArrayList();
         for(int i=0;i<passwordPossibilities.size();i++){
-            System.out.println(passwordPossibilities.get(i));
+            ArrayList<String> array=passwordPossibilities.get(i);
+            String finalString= String.join("",array);
+            resultPossibilities.add(finalString);
         }
-        return passwordPossibilities;
+
+        return resultPossibilities;
     }
 
 
 
-    private String getPassword() {//TODO NAO PRECISA DO RETORNO?
+    private String getPassword() {
         MySqlController mysqlsobj = MySqlController.getInstance();
         try {
-            ResultSet results = mysqlsobj.run_select_statement("SELECT * FROM user WHERE email = '" + userEmail + "'");
-           
+            ResultSet results = mysqlsobj.run_select_statement("SELECT hash FROM Usuarios WHERE login_name = '" + userEmail + "'");
             this.validUser = results.next();
-            String aux= results.getString(3);
-            return aux;
+            return results.getString(1);
+            
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, e.getStackTrace().toString() + " " + e.getSQLState() + " " + e.getMessage());
             this.validUser = false;
-            return "";
+            return "errou";
         }
     }
 
 
-    private boolean isPasswordValid(  ArrayList<ArrayList<String>> password){//TODO mudar para private
+    public boolean isPasswordValid(  ArrayList<ArrayList<String>> password){//TODO mudar para private
         //senha menor que 4 elementos e maior que 6 é sempre inválida
         int length=password.size();
         if (length<4 || length>6){
             return false;
         }
         //Create Array of Possibilities
-        passwordPossibilities=getPossibilities(password);
+        ArrayList<String> pp= new  ArrayList<String>(getPossibilities(password));
         // check array of possibilities
         //get user password
         String pass=getPassword();
         System.out.println("Pass:"+pass);
-
-
-
-
-
-
-
-
-        
-        return true;
+        if(pp.contains(pass)){
+            System.out.println("YASS");
+            return true;
+        }else{
+            System.out.println("NOOOS");
+            return false;
+        }
     }
 
 
