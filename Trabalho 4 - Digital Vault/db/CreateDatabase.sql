@@ -1,12 +1,11 @@
 CREATE TABLE Usuarios(
-    id integer NOT NULL auto_increment,
     login_name varchar(200),
     salt varchar(200),
     hash varchar(200),
     cert varchar(200),
     ct varchar(200),
     blk varchar(200),
-    PRIMARY KEY (id)
+    PRIMARY KEY (login_name)
 );
 
 CREATE TABLE Grupos(
@@ -22,9 +21,10 @@ CREATE TABLE Mensagens(
 
 CREATE TABLE Registros(
     id integer NOT NULL auto_increment,
-    dttime datetime,
-    userid integer,
-    arqname varchar(200),
+    mensagem_id integer NOT NULL,
+    dttime datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    login_name varchar(200),
+    arq_name varchar(200),
     PRIMARY KEY (id)
 );
 
@@ -96,9 +96,8 @@ VALUES
     (9004, 'Botão voltar de sair para o menu principal pressionado por <login_name>.')
 ;
 
-INSERT INTO Usuarios(id, login_name, salt, hash, cert, ct, blk)
+INSERT INTO Usuarios(login_name, salt, hash, cert, ct, blk)
 VALUES (
-    1,
     'user01@inf1416.puc-rio.br',
     '',
     'CABECADA',

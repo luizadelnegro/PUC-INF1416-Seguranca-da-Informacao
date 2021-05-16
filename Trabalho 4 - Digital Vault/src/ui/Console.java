@@ -6,6 +6,7 @@ import java.security.PrivateKey;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import controllers.RegistrosLogger;
 
 import models.PhoneticKeyBoard;
 import models.User;
@@ -27,6 +28,7 @@ public class Console {
 
 
     public static void main(String args[]) {
+        RegistrosLogger.log(1001, true); // Iniciado
         PrivateKeyHandler pkh = null;
 
 
@@ -35,50 +37,70 @@ public class Console {
         System.out.println(HEADER);
         Scanner sc= new Scanner(System.in); 
         PrivateKey privateK;
+
+        int tentativas=0;
+        boolean validatedPassword=false;
+        boolean blocked=false;
+        //boolean authorized=false;
+        //RegistrosLogger.log(2001, true); // Inicio aut 1
         
         while (user == null) {
+            /////////////////////// ETAPA DO EMAIL
             System.out.println("Insira seu email:");
             String userEmail = sc.nextLine();
             user = new User(userEmail);
             if (!user.isValid()){
-                System.out.println("(2005) Login name "+userEmail+ " não identificado.");
+                //usuario errado
                 user = null;
             } else if (user.isValid() && user.isBlocked()){
-                System.out.println("(2004) Login name "+ userEmail + " identificado com acesso bloqueado.");
                 user = null;
             }
             else{
-                System.out.println("(2003) Login name "+ userEmail + " lidentificadocom acesso liberado. ");
+                //PASSOU MENSAGEM DE PASSOU
             }
-            PhoneticKeyBoard keyBoard = new PhoneticKeyBoard();
-            while(selectedOption != 7) {
-                System.out.println(keyBoard.getAsSingleString() + "7- END");
-                selectedOption = sc.nextInt();
-                if (selectedOption > 0 && selectedOption < 7) {
-                    keyBoard.pressGroup(selectedOption);
-                    keyBoard.randomizeKeys();
+            /////////////////////// ETAPA DA SENHA
+            if(blocked==true){
+                user=null;
+            }
+            else{        
+                while(tentativas<=3 &&validatedPassword==false && blocked==false){
+                    PhoneticKeyBoard keyBoard = new PhoneticKeyBoard();
+                    while(selectedOption != 7) {
+                        System.out.println(keyBoard.getAsSingleString() + "7- END");
+                        selectedOption = sc.nextInt();
+                        if (selectedOption > 0 && selectedOption < 7) {
+                            keyBoard.pressGroup(selectedOption);
+                            keyBoard.randomizeKeys();
+                        }
+                    }
+                    selectedOption = 0;
+                    ArrayList<ArrayList<String>> password = keyBoard.getSelectedPassword();
+                    System.out.println(" SENHA SELECIONADA"+password);
+                    boolean isPasswordValid = user.getIsPasswordValid(password);
+                    if (!isPasswordValid){
+                        //RegistrosLogger.log(3004, true);
+                        tentativas+=1;
+                        if(tentativas==3){
+                            user=null;
+                            blocked=true;
+                        }
+                        System.out.println("TENTATIVA"+tentativas); //mensagem das tentativas  
+                    } else{
+                        validatedPassword=true;
+                    }    
                 }
             }
             //user01@inf1416.puc-rio.br
-            System.out.println(" Senha selecionada : "+keyBoard.getSelectedPassword());//TODO APAGAR AQUI E NO MODEL USER -- APENaS PARA EBUG
-            ArrayList<ArrayList<String>> password = keyBoard.getSelectedPassword();
-            boolean isPasswordValid = user.getIsPasswordValid(password);
-            if (!isPasswordValid){//TODO TEM QUE VER sE TA BLOQUEADO
-                //TODO MENSAGEM 3004
-                //TODO Contabilizar eros   
-            } else if (isPasswordValid && user.isBlocked()) {//TODO VER SE TA BLOQUEADO COM o pRIMEIROluca
-                //TODO mensagem 3007
-                user = null;
-            } else{
-                //TODO mensagem 3003
-            } 
-            //TODO mensagem 3002
-            System.out.println("(3002) Autenticação etapa 2 encerrada para .");
-
-        }
+ 
+            }
+            //RegistrosLogger.log(3002, true); // Fim aut 2
+            System.out.println("SAIU DA SENHA"); 
         
 
-           
+        
+        //RegistrosLogger.log(3002, true); // Fim aut 2
+
+        //RegistrosLogger.log(4001, true); // Inicio aut 3
         while (pkh == null){
             System.out.println("Insira o path para sua chave privada:");
             pkh = new PrivateKeyHandler(sc.nextLine());
@@ -86,14 +108,9 @@ public class Console {
                 pkh = null;
             }
         }
+        //RegistrosLogger.log(4002, true); // Fim aut 2
 
-        privateK = null;
-        while(privateK == null) {
-            System.out.println("Insira o path para sua chave privada:");
-            privateK = pkh.getPrivateKey(sc.nextLine());
-        }
-
-
+        //RegistrosLogger.log(1002, true); // Finalizado
         
     }
 }
