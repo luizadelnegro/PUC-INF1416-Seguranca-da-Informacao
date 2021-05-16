@@ -1,9 +1,11 @@
 {
     "java.project.sourcePaths": [
-        "src"
+        "src",
+        ""
     ],
     "java.project.referencedLibraries": [
         "lib/**/*.jar",
-        "bin\\mysql-connector-java-8.0.24.jar"
+        "bin\\mysql-connector-java-8.0.24.jar",
+        "bin/junit-platform-console-standalone-1.8.0-M1.jar"
     ]
 }

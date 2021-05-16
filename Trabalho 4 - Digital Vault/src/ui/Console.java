@@ -1,12 +1,15 @@
 package ui;
 
 import java.util.ArrayList;
+import java.nio.file.NoSuchFileException;
+import java.security.PrivateKey;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import models.PhoneticKeyBoard;
 import models.User;
+import controllers.PrivateKeyHandler;
 
 
 public class Console {
@@ -24,12 +27,15 @@ public class Console {
 
 
     public static void main(String args[]) {
+        PrivateKeyHandler pkh = null;
+
+
         int selectedOption = 0;
         
         System.out.println(HEADER);
         Scanner sc= new Scanner(System.in); 
-        System.out.println("(1001) Sistema Iniciado.");
-        System.out.println("(2001) Identificacao etapa 1 iniciada.");
+        PrivateKey privateK;
+        
         while (user == null) {
             System.out.println("Insira seu email:");
             String userEmail = sc.nextLine();
@@ -44,13 +50,6 @@ public class Console {
             else{
                 System.out.println("(2003) Login name "+ userEmail + " lidentificadocom acesso liberado. ");
             }
-
-            System.out.println("(2002) Autenticação etapa 1 encerrada. ");
-           
-           
-
-
-            System.out.println("(3001) Autenticação etapa 2 iniciada para "+  user.getEmail() + ".");
             PhoneticKeyBoard keyBoard = new PhoneticKeyBoard();
             while(selectedOption != 7) {
                 System.out.println(keyBoard.getAsSingleString() + "7- END");
@@ -60,33 +59,40 @@ public class Console {
                     keyBoard.randomizeKeys();
                 }
             }
-//lucasdamo1@gmail.com
             System.out.println(" Senha selecionada : "+keyBoard.getSelectedPassword());//TODO APAGAR AQUI E NO MODEL USER -- APENaS PARA EBUG
             ArrayList<ArrayList<String>> password = keyBoard.getSelectedPassword();
-           // System.out.println(user.getPossibilities(password));
             boolean isPasswordValid = user.getIsPasswordValid(password);
             if (!isPasswordValid){//TODO TEM QUE VER sE TA BLOQUEADO
-                System.out.print("(3004) Primeiro erro da senha pessoal contabilizadopara "  + user.getEmail() + ".");
-                //TODO Contabilizar eros
-                
+                //TODO MENSAGEM 3004
+                //TODO Contabilizar eros   
             } else if (isPasswordValid && user.isBlocked()) {//TODO VER SE TA BLOQUEADO COM o pRIMEIROluca
-                System.out.println("(3007) Acesso do usuario " + user.getEmail() + " bloqueadopela autenticação etapa 2." );
+                //TODO mensagem 3007
                 user = null;
-            }
-            else{
-                System.out.println("(3003) Senha pessoal verificada positivamente para " + user.getEmail() + ".");
+            } else{
+                //TODO mensagem 3003
             } 
-    
-            System.out.println("(3002) Autenticação etapa 2 encerrada para "+  user.getEmail() + ".");
-    
-
-
-
-
+            //TODO mensagem 3002
+            System.out.println("(3002) Autenticação etapa 2 encerrada para .");
 
         }
+        
 
-       
+           
+        while (pkh == null){
+            System.out.println("Insira o path para sua chave privada:");
+            pkh = new PrivateKeyHandler(sc.nextLine());
+            if(! pkh.isInitialized()) {
+                pkh = null;
+            }
+        }
+
+        privateK = null;
+        while(privateK == null) {
+            System.out.println("Insira o path para sua chave privada:");
+            privateK = pkh.getPrivateKey(sc.nextLine());
+        }
+
+
         
     }
 }
