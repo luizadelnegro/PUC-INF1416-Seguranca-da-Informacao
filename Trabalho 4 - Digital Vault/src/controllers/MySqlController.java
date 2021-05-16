@@ -64,6 +64,12 @@ public class MySqlController {
 
     }
 
+    public int run_insert_statement(String query) throws SQLException {
+        openConnection();
+        Statement stat = conn.createStatement();
+        return stat.executeUpdate(query);
+    }
+
     public void closeConnection() {
         if(safeConnIsOpen()) {
             try {
