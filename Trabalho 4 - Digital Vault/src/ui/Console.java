@@ -221,97 +221,110 @@ public class Console {
         }
     }
 
+    public static User newUserFromEmail() {
+        User u = null;
+        while (u == null) {
+            System.out.println("Insira seu email:");
+            String userEmail = sc.nextLine();
+            u = new User(userEmail);
+            if (!u.isValid()){
+                //usuario errado
+                u = null;
+            } else if(u.isBlocked()){
+                System.out.println("USU BLOQ");
+                u = null;
+            }
+        }
+        return u;
+    }
+
+    public static boolean userPassWord() {
+        boolean isPasswordValid = false;
+        int tentativas = 0;
+        int selectedOption = 0;
+        while(tentativas < 3 && ! isPasswordValid){
+            PhoneticKeyBoard keyBoard = new PhoneticKeyBoard();
+            while(selectedOption != 7) {
+                System.out.println(keyBoard.getAsSingleString() + "7- END" + "\t0- EXIT");
+                selectedOption = sc.nextInt();
+                if (selectedOption == 0) return false;
+                if (selectedOption > 0 && selectedOption < 7) {
+                    keyBoard.pressGroup(selectedOption);
+                    keyBoard.randomizeKeys();
+                }
+            }
+            selectedOption = 8;
+            ArrayList<ArrayList<String>> password = keyBoard.getSelectedPassword();
+
+            try{
+                isPasswordValid = user.getIsPasswordValid(password);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                isPasswordValid = false;
+            }
+            if (!isPasswordValid){
+                //RegistrosLogger.log(3004, true);
+                tentativas+=1;
+                if(tentativas >= 3){
+                    user.blockUser();
+                    return false;
+                }
+                System.out.println("TENTATIVA "+tentativas); //mensagem das tentativas  
+            }
+        }
+        return true;
+    }
+
+    public static boolean getPrivateKey() {
+        PrivateKeyHandler pkh = null;
+        boolean isValid = false;
+
+        while (pkh == null){
+            System.out.println("Insira o path para sua chave privada: ");
+            String pathKey = sc.nextLine();
+            if(pathKey == "EXIT") return false;
+            pkh = new PrivateKeyHandler(sc.nextLine());
+            if(! pkh.isInitialized()) {
+                pkh = null;
+            } else {
+                System.out.println("Insira seu passphrase: ");
+                PrivateKey privateKey = pkh.getPrivateKey(sc.nextLine());
+                if(privateKey == null) {
+                    pkh = null;
+                }
+                else {
+                    user.setPrivateKey(privateKey);
+                    try {
+                        isValid = PrivateKeyHandler.isPrivateKeyValid(privateKey, user.getPublicKey());
+                        user.setPrivateKey(privateKey);
+                    } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+                        e.printStackTrace();
+                        pkh = null;
+                    }
+                }
+            }
+        }
+        return isValid;
+    }
+
     public static void main(String args[]) {
         while(true) {
             //RegistrosLogger.log(1001, true); // Iniciado
-            PrivateKeyHandler pkh = null;
-            int tentativas=0;
-            boolean validatedPassword=false;
-            boolean isPasswordValid = false;
             int selectedOption = 0;
             
             System.out.println(HEADER);
 
-            PrivateKey privateK;
-
-            //RegistrosLogger.log(2001, true); // Inicio aut 1
-            while (user == null) {
-                /////////////////////// ETAPA DO EMAIL
-                System.out.println("Insira seu email:");
-                String userEmail = sc.nextLine();
-                user = new User(userEmail);
-                if (!user.isValid()){
-                    //usuario errado
-                    user = null;
-                }else if(user.isBlocked()){
-                    System.out.println("USU BLOQ");
-                    user = null;
-                } else if (user.isValid() && ! user.isBlocked()) {
-                        while(tentativas<3 &&validatedPassword==false){
-                            PhoneticKeyBoard keyBoard = new PhoneticKeyBoard();
-                            while(selectedOption != 7) {
-                                System.out.println(keyBoard.getAsSingleString() + "7- END");
-                                selectedOption = sc.nextInt();
-                                if (selectedOption > 0 && selectedOption < 7) {
-                                    keyBoard.pressGroup(selectedOption);
-                                    keyBoard.randomizeKeys();
-                                }
-                            }
-                            selectedOption = 0;
-                            ArrayList<ArrayList<String>> password = keyBoard.getSelectedPassword();
-                            System.out.println(" SENHA SELECIONADA"+password);
-
-                            try{
-                                isPasswordValid = user.getIsPasswordValid(password);
-                            }
-                            catch (Exception e) {
-                                e.printStackTrace();
-                                isPasswordValid = false;
-                            }
-                            if (!isPasswordValid){
-                                //RegistrosLogger.log(3004, true);
-                                tentativas+=1;
-                                if(tentativas==3){
-                                    user.blockUser();
-                                    user=null;
-                                }
-                                System.out.println("TENTATIVA"+tentativas); //mensagem das tentativas  
-                            } else{
-                                validatedPassword=true;
-                            }    
-                        }
-    //saiu da senha
-                }
-                //user01@inf1416.puc-rio.br
-     
+            if(user==null) user = newUserFromEmail();
+            if(!userPassWord()) {
+                user = null;
+                continue;
             }
-            //RegistrosLogger.log(3002, true); // Fim aut 2
-            System.out.println("SAIU DA SENHA"); 
-            
-
-            RegistrosLogger.log(4001, true); // Inicio aut 3
-            while (pkh == null){
-                System.out.println("Insira o path para sua chave privada: ");
-                pkh = new PrivateKeyHandler(sc.nextLine());
-                if(! pkh.isInitialized()) {
-                    pkh = null;
-                } else {
-                    System.out.println("Insira seu passphrase: ");
-                    PrivateKey privateKey = pkh.getPrivateKey(sc.nextLine());
-                    if(privateKey == null) {
-                        pkh = null;
-                    }
-                    else {
-                        user.setPrivateKey(privateKey);
-                        try {
-                            System.out.println(PrivateKeyHandler.isPrivateKeyValid(privateKey, user.getPublicKey()));
-                        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-                            e.printStackTrace();
-                            pkh = null;
-                        }
-                    }
-                }
+            if(!getPrivateKey()) {
+                user = null;
+                continue;
             }
+
             RegistrosLogger.log(4002, true); // Fim aut 3
 
             RegistrosLogger.log(4003, user.getLoginName(), true);
@@ -320,7 +333,6 @@ public class Console {
 
             //RegistrosLogger.log(1002, true); // Finalizado
             
-
             selectedOption = 0;
             while(selectedOption != 4) {
                 System.out.println(cabecalho);
@@ -357,34 +369,3 @@ public class Console {
         }
     }
 }
-
-
-
-            // /////////////////////// ETAPA DA SENHA
-            // // if(user.isBlocked()==true){
-            // //     System.out.println("Bloqueado antes da senha");
-            // //     user=null;
-            // // }
-            // else{        
-            //     while(tentativas<=3 &&validatedPassword==false && blocked==false){
-            //         PhoneticKeyBoard keyBoard = new PhoneticKeyBoard();
-            //         while(selectedOption != 7) {
-            //             System.out.println(keyBoard.getAsSingleString() + "7- END");
-            //             selectedOption = sc.nextInt();
-            //             if (selectedOption > 0 && selectedOption < 7) {
-            //                 keyBoard.pressGroup(selectedOption);
-            //                 keyBoard.randomizeKeys();
-            //             }
-            //         }
-            //         selectedOption = 0;
-            //         ArrayList<ArrayList<String>> password = keyBoard.getSelectedPassword();
-            //         System.out.println(" SENHA SELECIONADA"+password);
-            //         boolean isPasswordValid = user.getIsPasswordValid(password);
-            //         if (!isPasswordValid){
-            //             //RegistrosLogger.log(3004, true);
-            //             tentativas+=1;
-            //             if(tentativas==3){
-            //                 System.out.println("BLOQUED MENU");
-            //                 user.blockUser();
-            //                 user=null;
-            //                 blocked=true;

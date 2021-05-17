@@ -123,7 +123,7 @@ public class User {
                 results.next();
                 publicKey = new X509CertificateHandler(results.getString(1)).getPublicKey();
             }
-        } catch (SQLException | CertificateException e) {
+        } catch (SQLException | CertificateException | IllegalArgumentException e) {
                 e.printStackTrace();
                 publicKey = null;
         }
@@ -170,7 +170,7 @@ public class User {
         MySqlController mysqlsobj = MySqlController.getInstance();
         if (!isAdmin()) return 0;
         try {
-            String q = String.format("SELECT count(*) FROM Usarios;");
+            String q = String.format("SELECT count(*) FROM Usuarios;");
             ResultSet results = mysqlsobj.run_select_statement(q);
             results.next();
             return results.getInt(1);
