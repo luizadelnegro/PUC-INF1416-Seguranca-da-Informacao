@@ -92,6 +92,7 @@ public class Console {
         while(!samePass) {
             samePass = true;
             System.out.println("Senha: ");
+            selectedOption = 1;
             while(selectedOption != 0) {
                 System.out.println(PhoneticKeyBoard.phonemesPasswordAll() + "\t0-EXIT");
                 selectedOption = sc.nextInt();
@@ -346,6 +347,7 @@ public class Console {
                         consultarPastaDeArquivosSecretos(user);
                         break;
                     case 4:
+                        user = null;
                         break;
                     default:
                         System.out.println("Opcao invalida!");
