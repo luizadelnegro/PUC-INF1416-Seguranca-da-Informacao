@@ -226,9 +226,7 @@ public class Console {
             PrivateKeyHandler pkh = null;
             int tentativas=0;
             boolean validatedPassword=false;
-            boolean blocked=false;
             boolean isPasswordValid = false;
-
             int selectedOption = 0;
             
             System.out.println(HEADER);
@@ -244,42 +242,44 @@ public class Console {
                 if (!user.isValid()){
                     //usuario errado
                     user = null;
+                }else if(user.isBlocked()){
+                    System.out.println("USU BLOQ");
+                    user = null;
                 } else if (user.isValid() && ! user.isBlocked()) {
-                    
-                    while(tentativas<=3 &&validatedPassword==false && blocked==false){
-                        PhoneticKeyBoard keyBoard = new PhoneticKeyBoard();
-                        while(selectedOption != 7) {
-                            System.out.println(keyBoard.getAsSingleString() + "7- END");
-                            selectedOption = sc.nextInt();
-                            if (selectedOption > 0 && selectedOption < 7) {
-                                keyBoard.pressGroup(selectedOption);
-                                keyBoard.randomizeKeys();
+                        while(tentativas<3 &&validatedPassword==false){
+                            PhoneticKeyBoard keyBoard = new PhoneticKeyBoard();
+                            while(selectedOption != 7) {
+                                System.out.println(keyBoard.getAsSingleString() + "7- END");
+                                selectedOption = sc.nextInt();
+                                if (selectedOption > 0 && selectedOption < 7) {
+                                    keyBoard.pressGroup(selectedOption);
+                                    keyBoard.randomizeKeys();
+                                }
                             }
-                        }
-                        selectedOption = 0;
-                        ArrayList<ArrayList<String>> password = keyBoard.getSelectedPassword();
-                        System.out.println(" SENHA SELECIONADA"+password);
+                            selectedOption = 0;
+                            ArrayList<ArrayList<String>> password = keyBoard.getSelectedPassword();
+                            System.out.println(" SENHA SELECIONADA"+password);
 
-                        try{
-                            isPasswordValid = user.getIsPasswordValid(password);
-                        }
-                        catch (Exception e) {
-                            e.printStackTrace();
-                            isPasswordValid = false;
-                        }
-                        if (!isPasswordValid){
-                            //RegistrosLogger.log(3004, true);
-                            tentativas+=1;
-                            if(tentativas==3){
-                                user=null;
-                                blocked=true;
+                            try{
+                                isPasswordValid = user.getIsPasswordValid(password);
                             }
-                            System.out.println("TENTATIVA"+tentativas); //mensagem das tentativas  
-                        } else{
-                            validatedPassword=true;
-                        }    
-                    }
-                    //saiu da senha
+                            catch (Exception e) {
+                                e.printStackTrace();
+                                isPasswordValid = false;
+                            }
+                            if (!isPasswordValid){
+                                //RegistrosLogger.log(3004, true);
+                                tentativas+=1;
+                                if(tentativas==3){
+                                    user.blockUser();
+                                    user=null;
+                                }
+                                System.out.println("TENTATIVA"+tentativas); //mensagem das tentativas  
+                            } else{
+                                validatedPassword=true;
+                            }    
+                        }
+    //saiu da senha
                 }
                 //user01@inf1416.puc-rio.br
      
@@ -355,3 +355,34 @@ public class Console {
         }
     }
 }
+
+
+
+            // /////////////////////// ETAPA DA SENHA
+            // // if(user.isBlocked()==true){
+            // //     System.out.println("Bloqueado antes da senha");
+            // //     user=null;
+            // // }
+            // else{        
+            //     while(tentativas<=3 &&validatedPassword==false && blocked==false){
+            //         PhoneticKeyBoard keyBoard = new PhoneticKeyBoard();
+            //         while(selectedOption != 7) {
+            //             System.out.println(keyBoard.getAsSingleString() + "7- END");
+            //             selectedOption = sc.nextInt();
+            //             if (selectedOption > 0 && selectedOption < 7) {
+            //                 keyBoard.pressGroup(selectedOption);
+            //                 keyBoard.randomizeKeys();
+            //             }
+            //         }
+            //         selectedOption = 0;
+            //         ArrayList<ArrayList<String>> password = keyBoard.getSelectedPassword();
+            //         System.out.println(" SENHA SELECIONADA"+password);
+            //         boolean isPasswordValid = user.getIsPasswordValid(password);
+            //         if (!isPasswordValid){
+            //             //RegistrosLogger.log(3004, true);
+            //             tentativas+=1;
+            //             if(tentativas==3){
+            //                 System.out.println("BLOQUED MENU");
+            //                 user.blockUser();
+            //                 user=null;
+            //                 blocked=true;
