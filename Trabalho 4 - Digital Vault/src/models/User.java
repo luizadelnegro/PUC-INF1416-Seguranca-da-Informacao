@@ -367,6 +367,10 @@ public class User {
 		timer.schedule(unblock, 120000);
     }
 
+    public void updateUser(X509CertificateHandler xHandler, String passWord) {
+        
+    }
+
     
 
 }

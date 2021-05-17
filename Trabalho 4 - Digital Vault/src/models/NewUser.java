@@ -30,15 +30,16 @@ public class NewUser {
     Integer blk = 0;
     String unome;
 
-    public boolean setCrtPath(String path) {
+    public X509CertificateHandler setCrtPath(String path) {
         Path crtPath;
+        X509CertificateHandler certH = null;
         crtPath = Paths.get(path);
         if (!crtPath.toFile().exists()) {
-            return false;
+            return null;
         };
         try {
             FileInputStream is = new FileInputStream (path);
-            X509CertificateHandler certH = new X509CertificateHandler(is);
+            certH = new X509CertificateHandler(is);
             is.close();
             ByteArrayInputStream fi = new ByteArrayInputStream(certH.getEncoded());
             cert = new String(Base64.getEncoder().encode(fi.readAllBytes()), StandardCharsets.UTF_8);
@@ -46,9 +47,9 @@ public class NewUser {
             unome = certH.getName();
         } catch (CertificateException | IOException e){
             e.printStackTrace();
-            return false;
+            return null;
         }
-        return true;
+        return certH;
 
     }
 
@@ -87,7 +88,7 @@ public class NewUser {
         // if (loginName == null || salt == null || hash == null || cert == null || grupo == null || unome == null) {
         //     return false;
         // }
-        String sql = "INSERT IGNORE INTO Usuarios(login_name, salt, hash, cert, blk, grupo, unome) VALUES ('%s', '%s', '%s', '%s', %d, %d, '%s');";
+        String sql = "INSERT INTO Usuarios(login_name, salt, hash, cert, blk, grupo, unome) VALUES ('%s', '%s', '%s', '%s', %d, %d, '%s');";
         sql = String.format(sql, loginName, salt, hash, cert, blk, grupo, unome);
         MySqlController mysqlsobj = MySqlController.getInstance();
         try {

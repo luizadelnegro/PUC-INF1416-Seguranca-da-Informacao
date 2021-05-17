@@ -16,8 +16,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.crypto.NoSuchPaddingException;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import controllers.RegistrosLogger;
+import controllers.X509CertificateHandler;
 import models.DigitalVaultFile;
 import models.NewUser;
 import models.PhoneticKeyBoard;
@@ -58,6 +60,7 @@ public class Console {
 
 
     public static void cadastrarUsuario(User admin) {
+        X509CertificateHandler xHandler = null;
         String cabecalho = String.format(Console.CABECALHO, user.getLoginName(), user.getGroupName(), user.getName());
         String corpo1 = String.format("Total de usuarios no sistema: %d", user.getTotalUsuarios());
         String crtPath = null;
@@ -74,7 +77,8 @@ public class Console {
             System.out.println("Caminho do arquivo do certificado digital (EXIT para cancelar): ");
             crtPath = sc.nextLine();
             if(crtPath.equals("EXIT")) return;
-            if (!nu.setCrtPath(crtPath)) {
+            xHandler = nu.setCrtPath(crtPath);
+            if (xHandler == null) {
                 crtPath = null;
             }
         }
@@ -90,6 +94,7 @@ public class Console {
             }
         }
         while(!samePass) {
+            int previousPhonema = 0;
             samePass = true;
             System.out.println("Senha: ");
             selectedOption = 1;
@@ -98,11 +103,22 @@ public class Console {
                 selectedOption = sc.nextInt();
                 if (selectedOption > 0 && selectedOption <= 18) {
                     PhoneticKeyBoard.pressPhonema(selectedOption);
+                    if(previousPhonema == selectedOption) {
+                        // Sequencia de fonema repetido!
+                        RegistrosLogger.log(6003, user.getEmail(), true);
+                        continue;
+                    }
+                    previousPhonema = selectedOption;
                 }
             }
             selectedOption = 1;
             System.out.println("Confirmacao senha: ");
             String firstPass = PhoneticKeyBoard.getPassword();
+            if(firstPass.length() < 8 || firstPass.length() > 12) {
+                // Senha com menos de 4 fonemas ou mais de 12!
+                RegistrosLogger.log(6003, user.getEmail(), true);
+                continue;
+            }
             nu.setPassword(firstPass);
             while(selectedOption != 0) {
                 System.out.println(PhoneticKeyBoard.phonemesPasswordAll() + "\t0-EXIT");
@@ -118,13 +134,20 @@ public class Console {
             }
             
         }
-        if(!nu.saveToDb()) {
-            System.out.println("Error!");
+        System.out.println(xHandler.getConfirmationString());
+        System.out.println("0- Cadastrar\t9- Voltar");
+        selectedOption = sc.nextInt();
+        if (selectedOption == 0) {
+            if(!nu.saveToDb()) {
+                System.out.println("Error!");
+            }
         }
 
     }
 
     public static void alterarSenhaPessoal() {
+        X509CertificateHandler xHandler = null;
+        String firstPass = null;
         String cabecalho = String.format(Console.CABECALHO, user.getLoginName(), user.getGroupName(), user.getName());
         String corpo1 = String.format(Console.CORPO1, user.getTotalDeAcessos());
         String crtPath = null;
@@ -137,8 +160,10 @@ public class Console {
         while(crtPath == null) {
             System.out.println("Caminho do arquivo do certificado digital (EXIT para cancelar): ");
             crtPath = sc.nextLine();
+            if(crtPath.equals("")) break;   // Nao vai mudar o certificado!
             if(crtPath.equals("EXIT")) return;
-            if (!nu.setCrtPath(crtPath)) {
+            xHandler = nu.setCrtPath(crtPath);
+            if (xHandler == null) {
                 crtPath = null;
             }
         }
@@ -154,10 +179,13 @@ public class Console {
                     PhoneticKeyBoard.pressPhonema(selectedOption);
                 }
             }
+            if(selectedOption == 0) {
+                // nao vai alterar a senha
+                break;
+            }
             selectedOption = 1;
             System.out.println("Confirmacao senha: ");
-            String firstPass = PhoneticKeyBoard.getPassword();
-            nu.setPassword(firstPass);
+            firstPass = PhoneticKeyBoard.getPassword();
             while(selectedOption != 0) {
                 System.out.println(PhoneticKeyBoard.phonemesPasswordAll() + "\t0-EXIT");
                 selectedOption = sc.nextInt();
@@ -171,8 +199,12 @@ public class Console {
                 System.out.println("Senhas nao coincidem!");
             }
         }
-        nu.saveToDb();
-
+        System.out.println(xHandler.getConfirmationString());
+        System.out.println("0- Cancelar\t9- Confirmar");
+        selectedOption = sc.nextInt();
+        if(selectedOption == 9) {
+            user.updateUser(xHandler, firstPass);
+        }
 
     }
 

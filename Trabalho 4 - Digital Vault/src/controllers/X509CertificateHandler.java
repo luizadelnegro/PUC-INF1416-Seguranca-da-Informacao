@@ -50,4 +50,8 @@ public class X509CertificateHandler {
             return null;
         }
     }
+
+    public String getConfirmationString() {
+        return String.format("Versão: %d\nSérie: %s\nValidade: %s\nTipo de assinatura:%s\nEmissor: %s\nSujeito: %s\nEmail:%s\n", cert.getVersion(), cert.getSerialNumber().toString(), cert.getNotAfter().toString(), cert.getSigAlgName(), cert.getIssuerDN().toString(), getName(), getEmail());
+    }
 }
