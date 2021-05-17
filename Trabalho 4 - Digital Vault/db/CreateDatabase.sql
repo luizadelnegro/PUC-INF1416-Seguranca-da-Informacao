@@ -5,11 +5,14 @@ CREATE TABLE Usuarios(
     cert varchar(200),
     ct varchar(200),
     blk varchar(200),
+    grupo integer NOT NULL,
+    unome varchar(200) NOT NULL,
     PRIMARY KEY (login_name)
 );
 
 CREATE TABLE Grupos(
     gid integer NOT NULL auto_increment,
+    nome varchar(200),
     PRIMARY KEY (gid)
 );
 
@@ -32,6 +35,26 @@ SET character_set_client = utf8;
 SET character_set_connection = utf8;
 SET character_set_results = utf8;
 SET collation_connection = utf8_general_ci;
+SET GLOBAL time_zone = '-3:00';
+
+INSERT INTO Grupos (gid, nome) 
+VALUES 
+    (1, 'Admin'),
+    (2, 'User');
+
+INSERT INTO Usuarios(login_name, salt, hash, cert, ct, blk, grupo, unome)
+VALUES 
+    (
+        'admin@inf1416.puc-rio.br',
+        '123',
+        'CABECADA',
+        '',
+        '',
+        '',
+        1,
+        'Admin'
+    )
+    ;
 
 INSERT INTO Mensagens(id, mensagem)
 VALUES
@@ -95,13 +118,3 @@ VALUES
     (9003, 'Botão sair pressionado por <login_name>.'),
     (9004, 'Botão voltar de sair para o menu principal pressionado por <login_name>.')
 ;
-
-INSERT INTO Usuarios(login_name, salt, hash, cert, ct, blk)
-VALUES (
-    'user01@inf1416.puc-rio.br',
-    '123',
-    'CABECADA',
-    '',
-    '',
-    ''
-);

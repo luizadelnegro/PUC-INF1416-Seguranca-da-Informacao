@@ -8,6 +8,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
+import javax.security.auth.x500.X500Principal;
+
 public class X509CertificateHandler {
     
     X509Certificate cert;
@@ -16,6 +18,16 @@ public class X509CertificateHandler {
         FileInputStream is = new FileInputStream (pathToCert);
         this.cert = (X509Certificate) certFact.generateCertificate(is);
         is.close();
+    }
+
+    public String getEmail() {
+        String principal = cert.getSubjectX500Principal().toString();
+        return principal.split(",")[0].replace("EMAILADDRESS=", "").replace(" ", "");
+    }
+
+    public String getName() {
+        String principal = cert.getSubjectX500Principal().toString();
+        return principal.split(",")[1].replace("CN=", "").replace(" ", "");
     }
 
     public PublicKey getPublicKey() {
