@@ -126,7 +126,6 @@ public class Console {
             int tentativas=0;
             boolean validatedPassword=false;
             boolean isPasswordValid = false;
-            boolean isBlockedTemp=false;
             int selectedOption = 0;
             
             System.out.println(HEADER);
@@ -146,7 +145,7 @@ public class Console {
                     System.out.println("USU BLOQ");
                     user = null;
                 } else if (user.isValid() && ! user.isBlocked()) {
-                        while(tentativas<=3 &&validatedPassword==false){
+                        while(tentativas<3 &&validatedPassword==false){
                             PhoneticKeyBoard keyBoard = new PhoneticKeyBoard();
                             while(selectedOption != 7) {
                                 System.out.println(keyBoard.getAsSingleString() + "7- END");
