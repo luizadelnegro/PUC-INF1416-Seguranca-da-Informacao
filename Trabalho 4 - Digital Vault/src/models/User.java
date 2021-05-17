@@ -209,9 +209,6 @@ public class User {
                 passwordPossibilities=temp;
             }
         }
-        
-        System.out.println("size: "+passwordPossibilities.size());
-
 //transforma lista de arrays em lista de lista
         ArrayList<String> resultPossibilities = new ArrayList();
         for(int i=0;i<passwordPossibilities.size();i++){
