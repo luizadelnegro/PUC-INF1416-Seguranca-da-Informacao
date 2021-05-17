@@ -228,32 +228,33 @@ public class User {
     }
 
 
-    public boolean isPasswordValid(  ArrayList<ArrayList<String>> password) throws NoSuchAlgorithmException, UnsupportedEncodingException{//TODO mudar para private
+    private boolean isPasswordValid(  ArrayList<ArrayList<String>> password) throws NoSuchAlgorithmException, UnsupportedEncodingException{//TODO mudar para private
         //senha menor que 4 elementos e maior que 6 é sempre inválida
         int length=password.size();
-        if (length<4 || length>6){
+        // (A AND !B) OR (!A AND B). TODO
+        if ( (length<4 || length>6)){
             return false;
         }
         //Create Array of Possibilities
         ArrayList<String> pp= new  ArrayList<String>(getPossibilities(password));
         // check array of possibilities
         //get user password
-        String pass=getPassword();//senha do usuario
-        //PARA TESTE ATE JUNTAR hasheia essa senha
         String salt=getSalt();
-       // String hashCorrectPass=generateHashedPassword(pass,salt);//PAREI AQUI
+        String hashCorrectPass=getPassword();
 
-
-        //pega o salt
-        //adiciona o salt a cada elemento
-        //hasheia e ve se eh igual
-        if(pp.contains(pass)){
-            System.out.println("YASS");
-            return true;
-        }else{
-            System.out.println("NOOOS");
-            return false;
+        int i=0;
+        int ppSize=pp.size();
+        boolean foundMatch=false;
+        while(i<ppSize && foundMatch==false){//salteia a lista inteira ate achar
+            String aux = pp.get(i);
+            String hashPP=generateHashedPassword(aux, salt);
+            if(hashCorrectPass.equals(hashPP)){
+                foundMatch=true;
+                return true;
+            }
+            i+=1;
         }
+        return false;
     }
 
 

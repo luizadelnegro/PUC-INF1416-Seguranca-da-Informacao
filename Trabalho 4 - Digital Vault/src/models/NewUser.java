@@ -16,19 +16,17 @@ import java.util.Random;
 import controllers.MySqlController;
 import controllers.X509CertificateHandler;
 
-public class NewUser {
-    
+public class NewUser {    
     String loginName;
-    Path crtPath;
     Integer grupo;
     String salt;
     String hash;
     String cert;
-    String ct;
-    String blk;
+    Integer blk = 0;
     String unome;
 
     public boolean setCrtPath(String path) {
+        Path crtPath;
         crtPath = Paths.get(path);
         if (!crtPath.toFile().exists()) {
             return false;
@@ -36,6 +34,8 @@ public class NewUser {
         try {
             X509CertificateHandler certH = new X509CertificateHandler(path);
             cert = ((RSAKey) certH.getPublicKey()).getModulus().toString();
+            loginName = certH.getEmail();
+            unome = certH.getName();
         } catch (CertificateException | IOException e){
             e.printStackTrace();
             return false;
@@ -76,12 +76,19 @@ public class NewUser {
     }
 
     public Boolean saveToDb() {
-        if (loginName == null || salt == null || hash == null || cert == null || grupo == null || unome == null) {
+        // if (loginName == null || salt == null || hash == null || cert == null || grupo == null || unome == null) {
+        //     return false;
+        // }
+        String sql = "INSERT IGNORE INTO Usuarios(login_name, salt, hash, cert, blk, grupo, unome) VALUES ('%s', '%s', '%s', '%s', %d, %d, '%s');";
+        sql = String.format(sql, loginName, salt, hash, cert, blk, grupo, unome);
+        MySqlController mysqlsobj = MySqlController.getInstance();
+        try {
+            int results = mysqlsobj.run_insert_statement(sql);
+            return results > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
             return false;
         }
-        String sql = "INSERT INTO Usuarios(login_name, salt, hash, cert, ct, blk, grupo, unome) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', %d, '%s' );";
-
-        return true;
     }
 
     public static String generateSalt() {

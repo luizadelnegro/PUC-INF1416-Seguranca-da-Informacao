@@ -86,7 +86,9 @@ public class Console {
             while(selectedOption != 0) {
                 System.out.println(PhoneticKeyBoard.phonemesPasswordAll() + "\t0-EXIT");
                 selectedOption = sc.nextInt();
-                PhoneticKeyBoard.pressPhonema(selectedOption);
+                if (selectedOption > 0 && selectedOption <= 18) {
+                    PhoneticKeyBoard.pressPhonema(selectedOption);
+                }
             }
             selectedOption = 1;
             System.out.println("Confirmacao senha: ");
@@ -95,7 +97,9 @@ public class Console {
             while(selectedOption != 0) {
                 System.out.println(PhoneticKeyBoard.phonemesPasswordAll() + "\t0-EXIT");
                 selectedOption = sc.nextInt();
-                PhoneticKeyBoard.pressPhonema(selectedOption);
+                if (selectedOption > 0 && selectedOption <= 18) {
+                    PhoneticKeyBoard.pressPhonema(selectedOption);
+                }
             }
             String secondPass = PhoneticKeyBoard.getPassword();
             if(!firstPass.equals(secondPass)) {
@@ -113,6 +117,50 @@ public class Console {
     public static void alterarSenhaPessoal() {
         String cabecalho = String.format(Console.CABECALHO, user.getLoginName(), user.getGroupName(), user.getName());
         String corpo1 = String.format(Console.CORPO1, user.getTotalDeAcessos());
+        String crtPath = null;
+        NewUser nu = new NewUser();
+        Boolean samePass = false;
+        Integer selectedOption;
+        
+        while(crtPath == null) {
+            System.out.println("Caminho do arquivo do certificado digital (EXIT para cancelar): ");
+            crtPath = sc.nextLine();
+            if(crtPath.equals("EXIT")) return;
+            if (!nu.setCrtPath(crtPath)) {
+                crtPath = null;
+            }
+        }
+
+        while(!samePass) {
+            samePass = true;
+            System.out.println("Senha: ");
+            selectedOption = 1;
+            while(selectedOption != 0) {
+                System.out.println(PhoneticKeyBoard.phonemesPasswordAll() + "\t0-EXIT");
+                selectedOption = sc.nextInt();
+                if (selectedOption > 0 && selectedOption <= 18) {
+                    PhoneticKeyBoard.pressPhonema(selectedOption);
+                }
+            }
+            selectedOption = 1;
+            System.out.println("Confirmacao senha: ");
+            String firstPass = PhoneticKeyBoard.getPassword();
+            nu.setPassword(firstPass);
+            while(selectedOption != 0) {
+                System.out.println(PhoneticKeyBoard.phonemesPasswordAll() + "\t0-EXIT");
+                selectedOption = sc.nextInt();
+                if (selectedOption > 0 && selectedOption <= 18) {
+                    PhoneticKeyBoard.pressPhonema(selectedOption);
+                }
+            }
+            String secondPass = PhoneticKeyBoard.getPassword();
+            if(!firstPass.equals(secondPass)) {
+                samePass = false;
+                System.out.println("Senhas nao coincidem!");
+            }
+        }
+        nu.saveToDb();
+
     }
 
     public static void consultarPastaDeArquivosSecretos() {

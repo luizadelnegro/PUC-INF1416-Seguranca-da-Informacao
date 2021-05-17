@@ -22,6 +22,7 @@ public class X509CertificateHandlerTest {
         try {
             adminCert = new X509CertificateHandler("C:/Users/Lucas/Documents/GitHub/PUC-INF1416-Seguranca-da-Informacao/Trabalho 4 - Digital Vault/keys/admin-x509.crt");
             pubK = adminCert.getPublicKey();
+            System.out.println(((RSAPublicKey) pubK).getModulus().toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
