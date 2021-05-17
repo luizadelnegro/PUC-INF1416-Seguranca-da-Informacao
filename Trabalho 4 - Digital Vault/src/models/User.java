@@ -248,10 +248,8 @@ public class User {
         ArrayList<String> pp= new  ArrayList<String>(getPossibilities(password));
         // check array of possibilities
         //get user password
-        String pass=getPassword();//senha do usuario
         String salt=getSalt();
-       //TODO ESSA LINHA ABAIXO TEM QUE APAGAR pORQUE A SENHA JA VAI VIR DO BANCO HASHEADA
-        String hashCorrectPass=generateHashedPassword(pass,salt);
+        String hashCorrectPass=getPassword();
 
         int i=0;
         int ppSize=pp.size();
@@ -266,7 +264,6 @@ public class User {
             i+=1;
         }
         return false;
-        
     }
 
 
