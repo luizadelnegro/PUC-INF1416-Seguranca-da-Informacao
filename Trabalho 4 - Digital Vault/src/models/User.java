@@ -19,7 +19,6 @@ public class User {
     
     private boolean validUser = false;
 
-    private boolean isBlocked;
 
     public  ArrayList<ArrayList<String>> passwordPossibilities = new ArrayList(); //TODO 
 
@@ -28,7 +27,6 @@ public class User {
 
     public User(String userEmail){
         this.userEmail = userEmail;
-        this.isBlocked = false; //TODO REMOVER
         isEmailValid();
     }
 
@@ -45,8 +43,22 @@ public class User {
         }
     }
 
+
     public boolean isBlocked(){
-        return this.isBlocked;
+        MySqlController mysqlsobj = MySqlController.getInstance();
+        try {
+            ResultSet results = mysqlsobj.run_select_statement("SELECT blk FROM Usuarios WHERE login_name = '" + userEmail + "'");
+            this.validUser = results.next();
+
+            if(results.getInt(1)==1){
+                return true;
+            }else{
+                return false;
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, e.getStackTrace().toString() + " " + e.getSQLState() + " " + e.getMessage());
+            return true;
+        }
     }
 
     public String getEmail(){
@@ -131,10 +143,11 @@ public class User {
     }
 
 
-    public boolean isPasswordValid(  ArrayList<ArrayList<String>> password) throws NoSuchAlgorithmException, UnsupportedEncodingException{//TODO mudar para private
+    private boolean isPasswordValid(  ArrayList<ArrayList<String>> password) throws NoSuchAlgorithmException, UnsupportedEncodingException{//TODO mudar para private
         //senha menor que 4 elementos e maior que 6 é sempre inválida
         int length=password.size();
-        if (length<4 || length>6){
+        // (A AND !B) OR (!A AND B). TODO
+        if ( (length<4 || length>6)){
             return false;
         }
         //Create Array of Possibilities
@@ -142,21 +155,24 @@ public class User {
         // check array of possibilities
         //get user password
         String pass=getPassword();//senha do usuario
-        //PARA TESTE ATE JUNTAR hasheia essa senha
         String salt=getSalt();
-       // String hashCorrectPass=generateHashedPassword(pass,salt);//PAREI AQUI
+       //TODO ESSA LINHA ABAIXO TEM QUE APAGAR pORQUE A SENHA JA VAI VIR DO BANCO HASHEADA
+        String hashCorrectPass=generateHashedPassword(pass,salt);
 
-
-        //pega o salt
-        //adiciona o salt a cada elemento
-        //hasheia e ve se eh igual
-        if(pp.contains(pass)){
-            System.out.println("YASS");
-            return true;
-        }else{
-            System.out.println("NOOOS");
-            return false;
+        int i=0;
+        int ppSize=pp.size();
+        boolean foundMatch=false;
+        while(i<ppSize && foundMatch==false){//salteia a lista inteira ate achar
+            String aux = pp.get(i);
+            String hashPP=generateHashedPassword(aux, salt);
+            if(hashCorrectPass.equals(hashPP)){
+                foundMatch=true;
+                return true;
+            }
+            i+=1;
         }
+        return false;
+        
     }
 
 
@@ -164,7 +180,7 @@ public class User {
         return this.isPasswordValid(password);
     }
 
-    public String getSalt(){
+    private String getSalt(){
         MySqlController mysqlsobj = MySqlController.getInstance();
         try {
             ResultSet results = mysqlsobj.run_select_statement("SELECT salt FROM Usuarios WHERE login_name = '" + userEmail + "'");
@@ -208,5 +224,47 @@ public class User {
         return String.format("%032x", new BigInteger(1, bytes));
     }
 
+
+    public void blockUser(){
+
+        MySqlController mysqlsobj = MySqlController.getInstance();
+        try {
+            int results = mysqlsobj.run_insert_statement("UPDATE Usuarios SET blk =1 WHERE login_name = '" + userEmail + "'");
+            if(results==0){
+                System.out.println(" RESULT VAZIO");
+            }
+            System.out.println("BLOQUEADO");
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, e.getStackTrace().toString() + " " + e.getSQLState() + " " + e.getMessage());
+            System.out.println("ERRO AO BLOQUEAR USUARIO");
+            System.exit(1);   
+        }
+        Timer timer = new Timer();		
+		
+		TimerTask unblock = new TimerTask() {
+			@Override
+			public void run() {
+				System.out.println("LIBERADO");
+		        timer.cancel(); //Terminate the timer thread
+		        
+                MySqlController mysqlsobj = MySqlController.getInstance();
+				try {
+                    int results = mysqlsobj.run_insert_statement("UPDATE Usuarios SET blk=0 WHERE login_name = '" + userEmail + "'");
+                        
+				}
+				catch (SQLException error) {
+					System.err.println(error);
+					System.out.println("ERRO AO DESBLOQUEAR USUARIO");
+					System.exit(1);
+				}
+                System.out.println("USU DESBLOQ.");
+				
+			}
+		};
+		timer.schedule(unblock, 120000);
+    }
+
+    
 
 }

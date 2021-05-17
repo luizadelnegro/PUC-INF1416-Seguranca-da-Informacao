@@ -61,9 +61,10 @@ public class Console {
                 //PASSOU MENSAGEM DE PASSOU
             }
             /////////////////////// ETAPA DA SENHA
-            if(blocked==true){
-                user=null;
-            }
+            // if(user.isBlocked()==true){
+            //     System.out.println("Bloqueado antes da senha");
+            //     user=null;
+            // }
             else{        
                 while(tentativas<=3 &&validatedPassword==false && blocked==false){
                     PhoneticKeyBoard keyBoard = new PhoneticKeyBoard();
@@ -83,6 +84,8 @@ public class Console {
                         //RegistrosLogger.log(3004, true);
                         tentativas+=1;
                         if(tentativas==3){
+                            System.out.println("BLOQUED MENU");
+                            user.blockUser();
                             user=null;
                             blocked=true;
                         }
