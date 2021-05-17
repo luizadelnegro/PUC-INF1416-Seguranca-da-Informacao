@@ -99,7 +99,7 @@ VALUES
 INSERT INTO Usuarios(login_name, salt, hash, cert, ct, blk)
 VALUES (
     'user01@inf1416.puc-rio.br',
-    '',
+    '123',
     'CABECADA',
     '',
     '',

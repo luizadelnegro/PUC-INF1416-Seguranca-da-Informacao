@@ -1,7 +1,9 @@
 package ui;
 
 import java.util.ArrayList;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.NoSuchFileException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -27,7 +29,7 @@ public class Console {
     private static final Logger LOGGER = Logger.getLogger(Console.class.getName());
 
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         RegistrosLogger.log(1001, true); // Iniciado
         PrivateKeyHandler pkh = null;
 
@@ -89,6 +91,7 @@ public class Console {
                         validatedPassword=true;
                     }    
                 }
+                //saiu da senha
             }
             //user01@inf1416.puc-rio.br
  

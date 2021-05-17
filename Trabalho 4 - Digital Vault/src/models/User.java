@@ -4,6 +4,10 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.*;
+import java.security.*;
+import java.math.BigInteger;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import controllers.MySqlController;
 
@@ -127,7 +131,7 @@ public class User {
     }
 
 
-    public boolean isPasswordValid(  ArrayList<ArrayList<String>> password){//TODO mudar para private
+    public boolean isPasswordValid(  ArrayList<ArrayList<String>> password) throws NoSuchAlgorithmException, UnsupportedEncodingException{//TODO mudar para private
         //senha menor que 4 elementos e maior que 6 é sempre inválida
         int length=password.size();
         if (length<4 || length>6){
@@ -137,8 +141,15 @@ public class User {
         ArrayList<String> pp= new  ArrayList<String>(getPossibilities(password));
         // check array of possibilities
         //get user password
-        String pass=getPassword();
-        System.out.println("Pass:"+pass);
+        String pass=getPassword();//senha do usuario
+        //PARA TESTE ATE JUNTAR hasheia essa senha
+        String salt=getSalt();
+       // String hashCorrectPass=generateHashedPassword(pass,salt);//PAREI AQUI
+
+
+        //pega o salt
+        //adiciona o salt a cada elemento
+        //hasheia e ve se eh igual
         if(pp.contains(pass)){
             System.out.println("YASS");
             return true;
@@ -149,7 +160,53 @@ public class User {
     }
 
 
-    public boolean getIsPasswordValid( ArrayList<ArrayList<String>> password){
+    public boolean getIsPasswordValid( ArrayList<ArrayList<String>> password) throws NoSuchAlgorithmException, UnsupportedEncodingException{
         return this.isPasswordValid(password);
     }
+
+    public String getSalt(){
+        MySqlController mysqlsobj = MySqlController.getInstance();
+        try {
+            ResultSet results = mysqlsobj.run_select_statement("SELECT salt FROM Usuarios WHERE login_name = '" + userEmail + "'");
+            this.validUser = results.next();
+            return results.getString(1);
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, e.getStackTrace().toString() + " " + e.getSQLState() + " " + e.getMessage());
+            this.validUser = false;
+            return "errou";
+        }
+    }
+
+    public String generateSalt()throws NoSuchAlgorithmException, UnsupportedEncodingException{
+        String charOptions = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        StringBuilder salt = new StringBuilder();
+        Random random = new Random();
+        while (salt.length() < 10) { 
+            int index = (int) (random.nextFloat() * charOptions.length());
+            salt.append(charOptions.charAt(index));
+        }
+        String saltString = salt.toString();
+        return saltString;
+    }
+
+    public String generateHashedPassword(String  password, String salt)throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        String newPassword=password+salt;
+        try {
+            MessageDigest sha1 = MessageDigest.getInstance("SHA1");
+            String digest = toHex(sha1.digest(newPassword.getBytes("UTF-8")));
+            return digest;
+            
+        } catch (NoSuchAlgorithmException exception) {
+            throw exception;
+        } catch (UnsupportedEncodingException exception) {
+            throw exception;
+        }
+
+    }
+    public static String toHex(byte[] bytes){
+        return String.format("%032x", new BigInteger(1, bytes));
+    }
+
+
 }
