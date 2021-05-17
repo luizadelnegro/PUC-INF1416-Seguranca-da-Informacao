@@ -46,13 +46,13 @@ INSERT INTO Usuarios(login_name, salt, hash, cert, ct, blk, grupo, unome)
 VALUES 
     (
         'user01@inf1416.puc-rio.br',
-        '',
-        '',
+        '123',
+        'CABECADA',
         '',
         '',
         '',
         2,
-        'User01'
+        'User 01'
     ),
     
     (

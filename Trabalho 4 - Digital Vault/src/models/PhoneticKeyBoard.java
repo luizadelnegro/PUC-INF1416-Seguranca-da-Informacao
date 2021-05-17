@@ -51,4 +51,9 @@ public class PhoneticKeyBoard {
         LOGGER.log(Level.FINEST, String.join(",", randomKeys.get(i-1)));
         selectedKeys.add(randomKeys.get(i-1));
     }
+
+    public ArrayList<ArrayList<String>> getSelectedPassword(){
+        return this.selectedKeys;
+    }
+
 }
