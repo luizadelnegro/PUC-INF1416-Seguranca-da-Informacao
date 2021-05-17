@@ -6,9 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 
 import test.controllers.PrivateKeyHandlerTest;
 import org.junit.jupiter.api.Test;
@@ -20,7 +26,9 @@ public class X509CertificateHandlerTest {
         X509CertificateHandler adminCert = null;
         PublicKey pubK = null;
         try {
-            adminCert = new X509CertificateHandler("C:/Users/Lucas/Documents/GitHub/PUC-INF1416-Seguranca-da-Informacao/Trabalho 4 - Digital Vault/keys/admin-x509.crt");
+            FileInputStream is = new FileInputStream ("C:/Users/Lucas/Documents/GitHub/PUC-INF1416-Seguranca-da-Informacao/Trabalho 4 - Digital Vault/keys/admin-x509.crt");
+            adminCert = new X509CertificateHandler(is);
+            is.close();
             pubK = adminCert.getPublicKey();
             System.out.println(((RSAPublicKey) pubK).getModulus().toString());
         } catch (Exception e) {
@@ -32,7 +40,9 @@ public class X509CertificateHandlerTest {
         X509CertificateHandler userCert = null;
         PublicKey pubK = null;
         try {
-            userCert = new X509CertificateHandler("C:/Users/Lucas/Documents/GitHub/PUC-INF1416-Seguranca-da-Informacao/Trabalho 4 - Digital Vault/keys/user01-x509.crt");
+            FileInputStream is = new FileInputStream ("C:/Users/Lucas/Documents/GitHub/PUC-INF1416-Seguranca-da-Informacao/Trabalho 4 - Digital Vault/keys/user01-x509.crt");
+            userCert = new X509CertificateHandler(is);
+            is.close();
             pubK = userCert.getPublicKey();
         } catch (Exception e) {
             e.printStackTrace();
@@ -52,7 +62,7 @@ public class X509CertificateHandlerTest {
     void testUserCert() {
         X509CertificateHandler userCert = null;
         try {
-            userCert = new X509CertificateHandler("C:/Users/Lucas/Documents/GitHub/PUC-INF1416-Seguranca-da-Informacao/Trabalho 4 - Digital Vault/keys/user01-x509.crt");
+            userCert = new X509CertificateHandler(new FileInputStream ("C:/Users/Lucas/Documents/GitHub/PUC-INF1416-Seguranca-da-Informacao/Trabalho 4 - Digital Vault/keys/user01-x509.crt"));
         } catch (Exception e) {
             e.printStackTrace();
             fail("ERROR");
@@ -64,6 +74,23 @@ public class X509CertificateHandlerTest {
             assertTrue(name.equals("Usuario01"));
         }
 
+    }
+    @Test
+    void testCertFromDb() {
+        X509CertificateHandler userCert = null;
+
+        try {
+            FileInputStream is = new FileInputStream ("C:/Users/Lucas/Documents/GitHub/PUC-INF1416-Seguranca-da-Informacao/Trabalho 4 - Digital Vault/keys/user01-x509.crt");
+            userCert = new X509CertificateHandler(is);
+            is.close();
+            ByteArrayInputStream fi = new ByteArrayInputStream(userCert.getEncoded());
+            String cert = new String(Base64.getEncoder().encode(fi.readAllBytes()), StandardCharsets.UTF_8);
+            userCert = new X509CertificateHandler(cert);
+            System.out.println(userCert.getName());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("ERROR");
+        }
     }
 
 }

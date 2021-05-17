@@ -1,15 +1,20 @@
 package models;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.interfaces.RSAKey;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -32,8 +37,11 @@ public class NewUser {
             return false;
         };
         try {
-            X509CertificateHandler certH = new X509CertificateHandler(path);
-            cert = ((RSAKey) certH.getPublicKey()).getModulus().toString();
+            FileInputStream is = new FileInputStream (path);
+            X509CertificateHandler certH = new X509CertificateHandler(is);
+            is.close();
+            ByteArrayInputStream fi = new ByteArrayInputStream(certH.getEncoded());
+            cert = new String(Base64.getEncoder().encode(fi.readAllBytes()), StandardCharsets.UTF_8);
             loginName = certH.getEmail();
             unome = certH.getName();
         } catch (CertificateException | IOException e){

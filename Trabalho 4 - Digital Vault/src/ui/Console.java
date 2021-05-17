@@ -1,15 +1,24 @@
 package ui;
 
 import java.util.ArrayList;
+import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.crypto.NoSuchPaddingException;
+
 import controllers.RegistrosLogger;
+import models.DigitalVaultFile;
 import models.NewUser;
 import models.PhoneticKeyBoard;
 import models.User;
@@ -122,6 +131,8 @@ public class Console {
         Boolean samePass = false;
         Integer selectedOption;
         
+        System.out.println(cabecalho);
+        System.out.println(corpo1);
         while(crtPath == null) {
             System.out.println("Caminho do arquivo do certificado digital (EXIT para cancelar): ");
             crtPath = sc.nextLine();
@@ -161,10 +172,52 @@ public class Console {
         }
         nu.saveToDb();
 
+
     }
 
-    public static void consultarPastaDeArquivosSecretos() {
+    public static void consultarPastaDeArquivosSecretos(User u) {
+        HashMap<Integer, String> indexFiles = new HashMap<Integer, String>();
+        Path folderPath = null;
+        String cabecalho = String.format(Console.CABECALHO, user.getLoginName(), user.getGroupName(), user.getName());
+        String corpo1 = String.format("Total de consultas do usuário: %d", user.getTotalConsultasDeAcessos());
 
+        while (folderPath == null || !folderPath.toFile().exists()) {
+            System.out.println("Caminho da pasta: ");
+            String inputPath =sc.nextLine();
+            if(inputPath.equals("EXIT")) {
+                return;
+            }
+            folderPath = Paths.get(inputPath);
+        }
+        for (File file : folderPath.toFile().listFiles()) {
+            if (file.isDirectory()) {
+                System.out.println("Directory: " + file.getAbsolutePath());
+            } else {
+                // System.out.println("File: " + file.getAbsolutePath());
+                // String extension = file.getAbsolutePath().substring(file.getAbsolutePath().indexOf("."));
+
+                switch(file.getName()) {
+                    case "index.env":
+                        indexFiles.put(1, file.getAbsolutePath());
+                        break;
+                    case "index.enc":
+                        indexFiles.put(2, file.getAbsolutePath());
+                        break;
+                    case "index.asd":
+                        indexFiles.put(3, file.getAbsolutePath());
+                        break;
+                }
+            }
+        }
+
+        DigitalVaultFile dvf = new DigitalVaultFile(indexFiles.get(1), indexFiles.get(2), indexFiles.get(3));
+        try {
+            byte[] indexDecrypted = dvf.decrypt(user.getPrivateKey());
+            dvf.isFileValid(indexDecrypted, user.getPublicKey());
+            System.out.println(new String(indexDecrypted, StandardCharsets.UTF_8));
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String args[]) {
@@ -235,15 +288,30 @@ public class Console {
             System.out.println("SAIU DA SENHA"); 
             
 
-            //RegistrosLogger.log(4001, true); // Inicio aut 3
-            // while (pkh == null){
-            //     System.out.println("Insira o path para sua chave privada:");
-            //     pkh = new PrivateKeyHandler(sc.nextLine());
-            //     if(! pkh.isInitialized()) {
-            //         pkh = null;
-            //     }
-            // }
-            //RegistrosLogger.log(4002, true); // Fim aut 3
+            RegistrosLogger.log(4001, true); // Inicio aut 3
+            while (pkh == null){
+                System.out.println("Insira o path para sua chave privada: ");
+                pkh = new PrivateKeyHandler(sc.nextLine());
+                if(! pkh.isInitialized()) {
+                    pkh = null;
+                } else {
+                    System.out.println("Insira seu passphrase: ");
+                    PrivateKey privateKey = pkh.getPrivateKey(sc.nextLine());
+                    if(privateKey == null) {
+                        pkh = null;
+                    }
+                    else {
+                        user.setPrivateKey(privateKey);
+                        try {
+                            System.out.println(PrivateKeyHandler.isPrivateKeyValid(privateKey, user.getPublicKey()));
+                        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+                            e.printStackTrace();
+                            pkh = null;
+                        }
+                    }
+                }
+            }
+            RegistrosLogger.log(4002, true); // Fim aut 3
 
             RegistrosLogger.log(4003, user.getLoginName(), true);
             String cabecalho = String.format(Console.CABECALHO, user.getLoginName(), user.getGroupName(), user.getName());
@@ -275,7 +343,7 @@ public class Console {
                         alterarSenhaPessoal();
                         break;
                     case 3:
-                        consultarPastaDeArquivosSecretos();
+                        consultarPastaDeArquivosSecretos(user);
                         break;
                     case 4:
                         break;

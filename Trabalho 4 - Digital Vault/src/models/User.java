@@ -5,12 +5,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.*;
 import java.security.*;
+import java.security.cert.CertificateException;
+import java.security.spec.X509EncodedKeySpec;
 import java.math.BigInteger;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import controllers.MySqlController;
-
+import controllers.X509CertificateHandler;
 import models.PhoneticKeyBoard;
 
 public class User {
@@ -25,6 +27,9 @@ public class User {
     private Integer totalConsultas = null;
 
     private boolean isBlocked;
+
+    private PrivateKey privateKey = null;
+    private PublicKey publicKey = null;
 
     public  ArrayList<ArrayList<String>> passwordPossibilities = new ArrayList(); //TODO 
 
@@ -87,6 +92,30 @@ public class User {
             updateGroupValues();
         }
         return groupId == 1;
+    }
+
+    public void setPrivateKey(PrivateKey key) {
+        this.privateKey = key;
+    }
+
+    public PrivateKey getPrivateKey() {
+        return privateKey;
+    }
+
+    public PublicKey getPublicKey() {
+        MySqlController mysqlsobj = MySqlController.getInstance();
+        try {
+            if (publicKey == null) {
+                String q = String.format("SELECT cert FROM Usuarios WHERE login_name = '%s';", userEmail);
+                ResultSet results = mysqlsobj.run_select_statement(q);
+                results.next();
+                publicKey = new X509CertificateHandler(results.getString(1)).getPublicKey();
+            }
+        } catch (SQLException | CertificateException e) {
+                e.printStackTrace();
+                publicKey = null;
+        }
+        return publicKey;
     }
 
     public String getName() {
