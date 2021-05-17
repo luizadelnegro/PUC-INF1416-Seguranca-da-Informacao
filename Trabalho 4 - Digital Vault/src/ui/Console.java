@@ -53,6 +53,8 @@ public class Console {
         String corpo1 = String.format("Total de usuarios no sistema: %d", user.getTotalUsuarios());
         String crtPath = null;
         Integer grupo = null;
+        Integer selectedOption = 1;
+        Boolean samePass = false;
 
         NewUser nu = new NewUser();
         System.out.println(cabecalho);
@@ -78,9 +80,30 @@ public class Console {
                 grupo = null;
             }
         }
-
-        System.out.println("Senha: ");
-        System.out.println("Confirmacao senha: ");
+        while(!samePass) {
+            samePass = true;
+            System.out.println("Senha: ");
+            while(selectedOption != 0) {
+                System.out.println(PhoneticKeyBoard.phonemesPasswordAll() + "\t0-EXIT");
+                selectedOption = sc.nextInt();
+                PhoneticKeyBoard.pressPhonema(selectedOption);
+            }
+            selectedOption = 1;
+            System.out.println("Confirmacao senha: ");
+            String firstPass = PhoneticKeyBoard.getPassword();
+            nu.setPassword(firstPass);
+            while(selectedOption != 0) {
+                System.out.println(PhoneticKeyBoard.phonemesPasswordAll() + "\t0-EXIT");
+                selectedOption = sc.nextInt();
+                PhoneticKeyBoard.pressPhonema(selectedOption);
+            }
+            String secondPass = PhoneticKeyBoard.getPassword();
+            if(!firstPass.equals(secondPass)) {
+                samePass = false;
+                System.out.println("Senhas nao coincidem!");
+            }
+            
+        }
         if(!nu.saveToDb()) {
             System.out.println("Error!");
         }
@@ -103,6 +126,7 @@ public class Console {
             int tentativas=0;
             boolean validatedPassword=false;
             boolean blocked=false;
+            boolean isPasswordValid = false;
 
             int selectedOption = 0;
             
@@ -119,17 +143,8 @@ public class Console {
                 if (!user.isValid()){
                     //usuario errado
                     user = null;
-                } else if (user.isValid() && user.isBlocked()){
-                    user = null;
-                }
-                else{
-                    //PASSOU MENSAGEM DE PASSOU
-                }
-                /////////////////////// ETAPA DA SENHA
-                if(blocked==true){
-                    user=null;
-                }
-                else{        
+                } else if (user.isValid() && ! user.isBlocked()) {
+                    
                     while(tentativas<=3 &&validatedPassword==false && blocked==false){
                         PhoneticKeyBoard keyBoard = new PhoneticKeyBoard();
                         while(selectedOption != 7) {
@@ -143,7 +158,14 @@ public class Console {
                         selectedOption = 0;
                         ArrayList<ArrayList<String>> password = keyBoard.getSelectedPassword();
                         System.out.println(" SENHA SELECIONADA"+password);
-                        boolean isPasswordValid = user.getIsPasswordValid(password);
+
+                        try{
+                            isPasswordValid = user.getIsPasswordValid(password);
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                            isPasswordValid = false;
+                        }
                         if (!isPasswordValid){
                             //RegistrosLogger.log(3004, true);
                             tentativas+=1;

@@ -275,32 +275,14 @@ public class User {
         }
     }
 
-    public String generateSalt()throws NoSuchAlgorithmException, UnsupportedEncodingException{
-        String charOptions = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-        StringBuilder salt = new StringBuilder();
-        Random random = new Random();
-        while (salt.length() < 10) { 
-            int index = (int) (random.nextFloat() * charOptions.length());
-            salt.append(charOptions.charAt(index));
-        }
-        String saltString = salt.toString();
-        return saltString;
-    }
-
-    public String generateHashedPassword(String  password, String salt)throws NoSuchAlgorithmException, UnsupportedEncodingException {
+    public static String generateHashedPassword(String  password, String salt) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         String newPassword=password+salt;
-        try {
-            MessageDigest sha1 = MessageDigest.getInstance("SHA1");
-            String digest = toHex(sha1.digest(newPassword.getBytes("UTF-8")));
-            return digest;
-            
-        } catch (NoSuchAlgorithmException exception) {
-            throw exception;
-        } catch (UnsupportedEncodingException exception) {
-            throw exception;
-        }
 
+        MessageDigest sha1 = MessageDigest.getInstance("SHA1");
+        String digest = toHex(sha1.digest(newPassword.getBytes("UTF-8")));
+        return digest;
     }
+
     public static String toHex(byte[] bytes){
         return String.format("%032x", new BigInteger(1, bytes));
     }

@@ -14,6 +14,7 @@ public class PhoneticKeyBoard {
     private ArrayList<ArrayList<String>> randomKeys = new ArrayList();
     private ArrayList<ArrayList<String>> selectedKeys = new ArrayList();
     
+    private static ArrayList<String> selectedFonema = new ArrayList();
     
     public PhoneticKeyBoard(){
         randomizeKeys();
@@ -56,4 +57,21 @@ public class PhoneticKeyBoard {
         return this.selectedKeys;
     }
 
+    public static void pressPhonema(int i ) {
+        selectedFonema.add(PHONEMES[i-1]);
+    }
+
+    public static String getPassword() {
+        String retorno = String.join("", selectedFonema);
+        selectedFonema = new ArrayList();
+        return retorno;
+    }
+
+    public static String phonemesPasswordAll() {
+        String retorno = "";
+        for(Integer i=0; i<PHONEMES.length; i++) {
+            retorno = retorno + "\t" + Integer.toString(i+1) + "- " + PHONEMES[i];
+        }   
+        return retorno;
+    }
 }
