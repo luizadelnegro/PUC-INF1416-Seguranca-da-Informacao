@@ -63,8 +63,6 @@ public class PrivateKeyHandler {
 
             return KeyFactory.getInstance("RSA").generatePrivate(keyspec);
         } catch (InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e) {
-            e.printStackTrace();
-
             return null;
         }
     }

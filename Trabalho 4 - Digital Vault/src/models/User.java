@@ -377,6 +377,9 @@ public class User {
         try{
             if(xHandler != null) {
                 updated = mysqlsobj.run_insert_statement(String.format("UPDATE Usuarios SET cert='%s', login_name='%s', unome='%s' WHERE login_name = '%s';", xHandler.getEncoded(), xHandler.getEmail(), xHandler.getName(), this.userEmail));
+                this.userEmail = xHandler.getEmail();
+                this.name = xHandler.getName();
+                this.publicKey = xHandler.getPublicKey();
             }
             if(passWord != null) {
                 salt = NewUser.generateSalt();
