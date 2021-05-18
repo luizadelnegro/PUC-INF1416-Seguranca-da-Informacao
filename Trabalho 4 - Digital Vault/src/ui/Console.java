@@ -3,6 +3,7 @@ package ui;
 import java.util.ArrayList;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -133,7 +134,7 @@ public class Console {
         System.out.println("Formulario de cadastro: \n");
         while(true){
             int continuar = MyUtil.safeGetIntInput("Deseja cadastrar um novo usuario? Aperte qualquer tecla ou\t 9- Voltar ao menu principal.");
-            if (continuar != 9){
+            if (continuar == 9){
                 RegistrosLogger.log(6007, user.getEmail(), false);
                 return;
             }
@@ -152,6 +153,7 @@ public class Console {
                 RegistrosLogger.log(6003, user.getEmail(), false);  
                 return;
             }
+            nu.setPassword(password);
             while(grupo == null) {
                 HashMap<Integer, String> gruposPossiveis = NewUser.getGroupsOptions();
                 grupo = MyUtil.safeGetIntInput("Grupo: " + gruposPossiveis.toString());
@@ -234,11 +236,17 @@ public class Console {
 
     }
 
+    public static void consultarArquivoSelecionado(Path filePath) {
+
+    }
+
     public static void consultarPastaDeArquivosSecretos() {
         HashMap<Integer, String> indexFiles = new HashMap<Integer, String>();
         Path folderPath = null;
+        byte[] indexDecrypted = null;
         String cabecalho = String.format(Console.CABECALHO, user.getLoginName(), user.getGroupName(), user.getName());
         String corpo1 = String.format("Total de consultas do usuário: %d", user.getTotalConsultasDeAcessos());
+        RegistrosLogger.log(8001, user.getEmail(), false);
 
         while (folderPath == null || !folderPath.toFile().exists()) {
             String inputPath = MyUtil.safeGetString("Caminho da pasta: ");
@@ -247,6 +255,7 @@ public class Console {
             }
             folderPath = Paths.get(inputPath);
         }
+        
         for (File file : folderPath.toFile().listFiles()) {
             if (file.isDirectory()) {
                 System.out.println("Directory: " + file.getAbsolutePath());
@@ -270,12 +279,54 @@ public class Console {
 
         DigitalVaultFile dvf = new DigitalVaultFile(indexFiles.get(1), indexFiles.get(2), indexFiles.get(3));
         try {
-            byte[] indexDecrypted = dvf.decrypt(user.getPrivateKey());
+            indexDecrypted = dvf.decrypt(user.getPrivateKey());
             dvf.isFileValid(indexDecrypted, user.getPublicKey());
-            System.out.println(new String(indexDecrypted, StandardCharsets.UTF_8));
         } catch(Exception e) {
             e.printStackTrace();
+            return;
         }
+        int selectedOption = -1;
+        while(selectedOption != 0) {
+            String indexString = new String(indexDecrypted, StandardCharsets.UTF_8);
+            String[] options = indexString.split("\n");
+            for(int i=0; i<options.length; i++) {
+                System.out.println(Integer.toString(i + 1) + "- " + options[i]);
+            }
+            System.out.println(new String(indexDecrypted, StandardCharsets.UTF_8));
+            selectedOption = MyUtil.safeGetIntInput("0 - Voltar ao menu principal");
+            if (selectedOption > 0 && selectedOption <= options.length){
+                Boolean canAccess = false;
+                String[] row = options[selectedOption-1].split(" ");
+                if(row[2].equals(user.getEmail()) || row[3].equals(user.getGroupName())) {
+                    // Invalid permission
+                    canAccess = true;
+                }
+                if(canAccess) {
+                    byte[] decFile = null;
+                    Path fileEnv = Paths.get(folderPath.toString(), row[0] + ".env");
+                    Path fileEnc = Paths.get(folderPath.toString(), row[0] + ".enc");
+                    Path fileAsd = Paths.get(folderPath.toString(), row[0] + ".asd");
+                    DigitalVaultFile sdf = new DigitalVaultFile(fileEnv.toString(), fileEnc.toString(), fileAsd.toString());
+                    try {
+                        decFile = sdf.decrypt(user.getPrivateKey());
+                        sdf.isFileValid(decFile, user.getPublicKey());
+                        FileOutputStream fos = new FileOutputStream(Paths.get(folderPath.toString(), row[1]).toString());
+                        fos.write(decFile);
+                        System.out.println("WROTE! path= " + Paths.get(folderPath.toString(), row[1]).toString());
+                
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                else {
+                    System.out.println("Can not access");
+                }
+
+            }
+        }
+        RegistrosLogger.log(8002, user.getEmail(), false);
     }
 
     public static User newUserFromEmail() {
@@ -341,12 +392,13 @@ public class Console {
         boolean isValid = false;
 
         while (pkh == null){
-            String pathKey = MyUtil.safeGetString("Insira o path para sua chave privada: ");
-            if(pathKey == "EXIT") return false;
-            try {
-                pkh = new PrivateKeyHandler(pathKey);
-            } catch (IOException e) {
-                RegistrosLogger.log(4004, user.getEmail(), false);
+            while(pkh==null) {
+                String pathKey = MyUtil.safeGetString("Insira o path para sua chave privada: ");
+                try {
+                    pkh = new PrivateKeyHandler(pathKey);
+                } catch (IOException e) {
+                    RegistrosLogger.log(4004, user.getEmail(), false);
+                }
             }
             if(! pkh.isInitialized()) {
                 pkh = null;

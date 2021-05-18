@@ -38,8 +38,8 @@ SET GLOBAL time_zone = '-3:00';
 
 INSERT INTO Grupos (gid, nome) 
 VALUES 
-    (1, 'Admin'),
-    (2, 'User');
+    (1, 'administrator'),
+    (2, 'usuario');
 
 INSERT INTO Usuarios(login_name, salt, hash, cert, blk, grupo, unome)
 VALUES 

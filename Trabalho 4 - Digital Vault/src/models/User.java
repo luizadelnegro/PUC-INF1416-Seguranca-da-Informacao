@@ -35,7 +35,6 @@ public class User {
 
     public  ArrayList<ArrayList<String>> passwordPossibilities = new ArrayList(); //TODO 
 
-
     private static final Logger LOGGER = Logger.getLogger(User.class.getName());
 
     public User(String userEmail){
