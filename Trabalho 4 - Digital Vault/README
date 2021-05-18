@@ -1,0 +1,8 @@
+Only admin is registered on start. With the following keys:
+
+Phonemes: CA BE CA DA 
+
+Private key path: /keys/admin-pkcs8-des.key
+
+Private key passphrase: admin
+
