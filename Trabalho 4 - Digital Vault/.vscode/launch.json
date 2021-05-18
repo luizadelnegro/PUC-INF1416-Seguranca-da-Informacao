@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch ViewLogs",
+            "request": "launch",
+            "mainClass": "ui.ViewLogs",
+            "projectName": "Trabalho 4 - Digital Vault_7f92b2d8"
+        },
+        {
+            "type": "java",
             "name": "Launch Console",
             "request": "launch",
             "mainClass": "ui.Console",

@@ -88,9 +88,6 @@ public class Console {
                     }
                     previousPhonema = selectedOption;
                 }
-                else {
-                    RegistrosLogger.log(logFailId, user.getEmail(), true);
-                }
             }
             selectedOption = 1;
             System.out.println("Confirmacao senha: ");
@@ -110,6 +107,7 @@ public class Console {
             String secondPass = PhoneticKeyBoard.getPassword();
             if(!firstPass.equals(secondPass)) {
                 samePass = false;
+                RegistrosLogger.log(logFailId, user.getEmail(), true);
                 System.out.println("Senhas nao coincidem!");
             }
             
@@ -215,7 +213,7 @@ public class Console {
             
             String password = getNewPassword(7002);
             if(password == null || password.equals("")) password = null;
-            
+            changingPass = password != null;
             if(xHandler != null) {
                  System.out.println(xHandler.getConfirmationString());
                  changingCert = true;
@@ -394,7 +392,6 @@ public class Console {
                 isPasswordValid = false;
             }
             if (!isPasswordValid){
-                //RegistrosLogger.log(3004, true);
                 tentativas+=1;
                 RegistrosLogger.log(3003 + tentativas, user.getEmail(), false);
                 if(tentativas >= 3){

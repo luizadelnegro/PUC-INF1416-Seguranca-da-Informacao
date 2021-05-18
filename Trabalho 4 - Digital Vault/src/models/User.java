@@ -384,7 +384,7 @@ public class User {
             if(passWord != null) {
                 salt = NewUser.generateSalt();
                 hash = User.generateHashedPassword(passWord, salt);
-                updated = mysqlsobj.run_insert_statement(String.format("UPDATE Usuarios SET salt='%s', hash = '%' WHERE login_name = '%s;", salt, hash, this.userEmail));
+                updated = mysqlsobj.run_insert_statement(String.format("UPDATE Usuarios SET salt='%s', hash = '%s' WHERE login_name = '%s';", salt, hash, this.userEmail));
             }
         } catch (SQLException | NoSuchAlgorithmException | UnsupportedEncodingException e) {
             e.printStackTrace();
