@@ -42,13 +42,16 @@ public class X509CertificateHandler {
         return this.cert.getPublicKey();
     }
 
-    public byte[] getEncoded() {
+    public String getEncoded() {
         try {
-            return this.cert.getEncoded();
+            ByteArrayInputStream fi = new ByteArrayInputStream(this.cert.getEncoded());
+            String cert = new String(Base64.getEncoder().encode(fi.readAllBytes()), StandardCharsets.UTF_8);
+            return cert;
         } catch (CertificateEncodingException e) {
             e.printStackTrace();
             return null;
         }
+
     }
 
     public String getConfirmationString() {

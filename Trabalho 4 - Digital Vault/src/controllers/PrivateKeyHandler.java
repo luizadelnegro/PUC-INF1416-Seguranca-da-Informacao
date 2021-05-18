@@ -29,12 +29,9 @@ public class PrivateKeyHandler {
     
     private byte[] encryptedKey;
 
-    public PrivateKeyHandler(String pathToPrivateKey) {
-        try {
-            this.encryptedKey = Files.readAllBytes(Paths.get(pathToPrivateKey));  
-        } catch (IOException e) {
-            
-        }
+    public PrivateKeyHandler(String pathToPrivateKey) throws IOException {
+        this.encryptedKey = Files.readAllBytes(Paths.get(pathToPrivateKey));  
+
     }
 
     public Boolean isInitialized() {

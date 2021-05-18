@@ -41,8 +41,7 @@ public class NewUser {
             FileInputStream is = new FileInputStream (path);
             certH = new X509CertificateHandler(is);
             is.close();
-            ByteArrayInputStream fi = new ByteArrayInputStream(certH.getEncoded());
-            cert = new String(Base64.getEncoder().encode(fi.readAllBytes()), StandardCharsets.UTF_8);
+            cert = certH.getEncoded();
             loginName = certH.getEmail();
             unome = certH.getName();
         } catch (CertificateException | IOException e){

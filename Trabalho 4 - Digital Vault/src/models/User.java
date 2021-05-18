@@ -3,6 +3,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.mysql.cj.jdbc.exceptions.SQLError;
+
 import java.util.*;
 import java.security.*;
 import java.security.cert.CertificateException;
@@ -367,8 +370,24 @@ public class User {
 		timer.schedule(unblock, 120000);
     }
 
-    public void updateUser(X509CertificateHandler xHandler, String passWord) {
-        
+    public int updateUser(X509CertificateHandler xHandler, String passWord) {
+        int updated = 0;
+        String salt;
+        String hash;
+        MySqlController mysqlsobj = MySqlController.getInstance();
+        try{
+            if(xHandler != null) {
+                updated = mysqlsobj.run_insert_statement(String.format("UPDATE Usuarios SET cert='%s', login_name='%s', unome='%s' WHERE login_name = '%s';", xHandler.getEncoded(), xHandler.getEmail(), xHandler.getName(), this.userEmail));
+            }
+            if(passWord != null) {
+                salt = NewUser.generateSalt();
+                hash = User.generateHashedPassword(passWord, salt);
+                updated = mysqlsobj.run_insert_statement(String.format("UPDATE Usuarios SET salt='%s', hash = '%' WHERE login_name = '%s;", salt, hash, this.userEmail));
+            }
+        } catch (SQLException | NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return updated;
     }
 
     

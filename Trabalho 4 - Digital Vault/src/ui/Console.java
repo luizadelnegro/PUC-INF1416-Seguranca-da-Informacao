@@ -2,6 +2,8 @@ package ui;
 
 import java.util.ArrayList;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
@@ -9,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.Scanner;
@@ -25,6 +28,7 @@ import models.NewUser;
 import models.PhoneticKeyBoard;
 import models.User;
 import controllers.PrivateKeyHandler;
+import ui.MyUtil;
 
 
 public class Console {
@@ -37,7 +41,6 @@ public class Console {
     "**************************************\n\n";
 
     private static User user;
-    private static Scanner sc= new Scanner(System.in); 
 
     private static final Logger LOGGER = Logger.getLogger(Console.class.getName());
 
@@ -58,71 +61,47 @@ public class Console {
         "2 – Consultar pasta de arquivos secretos do usuário\n" +
         "3 – Sair do Sistema\n";
 
-
-    public static void cadastrarUsuario(User admin) {
-        X509CertificateHandler xHandler = null;
-        String cabecalho = String.format(Console.CABECALHO, user.getLoginName(), user.getGroupName(), user.getName());
-        String corpo1 = String.format("Total de usuarios no sistema: %d", user.getTotalUsuarios());
-        String crtPath = null;
-        Integer grupo = null;
-        Integer selectedOption = 1;
-        Boolean samePass = false;
-
-        NewUser nu = new NewUser();
-        System.out.println(cabecalho);
-        System.out.println(corpo1);
-        System.out.println("Formulario de cadastro: \n");
-
-        while(crtPath == null) {
-            System.out.println("Caminho do arquivo do certificado digital (EXIT para cancelar): ");
-            crtPath = sc.nextLine();
-            if(crtPath.equals("EXIT")) return;
-            xHandler = nu.setCrtPath(crtPath);
-            if (xHandler == null) {
-                crtPath = null;
-            }
-        }
-        while(grupo == null) {
-            HashMap<Integer, String> gruposPossiveis = NewUser.getGroupsOptions();
-            System.out.println("Grupo: " + gruposPossiveis.toString());
-            grupo = sc.nextInt();
-            if(gruposPossiveis.keySet().contains(grupo)) {
-                nu.setGrupo(grupo);
-            }
-            else {
-                grupo = null;
-            }
-        }
+    public static String getNewPassword(int logFailId) {
+        int selectedOption;
+        boolean samePass = false;
+        String firstPass = null;
         while(!samePass) {
             int previousPhonema = 0;
             samePass = true;
             System.out.println("Senha: ");
             selectedOption = 1;
             while(selectedOption != 0) {
-                System.out.println(PhoneticKeyBoard.phonemesPasswordAll() + "\t0-EXIT");
-                selectedOption = sc.nextInt();
+                selectedOption = MyUtil.safeGetIntInput(PhoneticKeyBoard.phonemesPasswordAll() + "\t0-EXIT");
+                if (previousPhonema == 0 && selectedOption == 0) {
+                    // EXIT WITH BLANK PASSWORD
+                    return "";
+                }
                 if (selectedOption > 0 && selectedOption <= 18) {
                     PhoneticKeyBoard.pressPhonema(selectedOption);
                     if(previousPhonema == selectedOption) {
                         // Sequencia de fonema repetido!
-                        RegistrosLogger.log(6003, user.getEmail(), true);
+                        RegistrosLogger.log(logFailId, user.getEmail(), true);
+                        previousPhonema = 0;
+                        PhoneticKeyBoard.getPassword();
                         continue;
                     }
                     previousPhonema = selectedOption;
                 }
+                else {
+                    RegistrosLogger.log(logFailId, user.getEmail(), true);
+                }
             }
             selectedOption = 1;
             System.out.println("Confirmacao senha: ");
-            String firstPass = PhoneticKeyBoard.getPassword();
+            firstPass = PhoneticKeyBoard.getPassword();
             if(firstPass.length() < 8 || firstPass.length() > 12) {
                 // Senha com menos de 4 fonemas ou mais de 12!
                 RegistrosLogger.log(6003, user.getEmail(), true);
+                firstPass = null;
                 continue;
             }
-            nu.setPassword(firstPass);
             while(selectedOption != 0) {
-                System.out.println(PhoneticKeyBoard.phonemesPasswordAll() + "\t0-EXIT");
-                selectedOption = sc.nextInt();
+                selectedOption = MyUtil.safeGetIntInput(PhoneticKeyBoard.phonemesPasswordAll() + "\t0-EXIT");
                 if (selectedOption > 0 && selectedOption <= 18) {
                     PhoneticKeyBoard.pressPhonema(selectedOption);
                 }
@@ -134,12 +113,66 @@ public class Console {
             }
             
         }
-        System.out.println(xHandler.getConfirmationString());
-        System.out.println("0- Cadastrar\t9- Voltar");
-        selectedOption = sc.nextInt();
-        if (selectedOption == 0) {
-            if(!nu.saveToDb()) {
-                System.out.println("Error!");
+        return firstPass;
+    }
+
+
+    public static void cadastrarUsuario(User admin) {
+        X509CertificateHandler xHandler = null;
+        String cabecalho = String.format(Console.CABECALHO, user.getLoginName(), user.getGroupName(), user.getName());
+        String corpo1 = String.format("Total de usuarios no sistema: %d", user.getTotalUsuarios());
+        String crtPath = null;
+        Integer grupo = null;
+        Integer selectedOption = 1;
+        String password = "";
+        NewUser nu = new NewUser();
+        System.out.println(cabecalho);
+        System.out.println(corpo1);
+
+        RegistrosLogger.log(6001, user.getEmail(), false);
+        System.out.println("Formulario de cadastro: \n");
+        while(true){
+            int continuar = MyUtil.safeGetIntInput("Deseja cadastrar um novo usuario? Aperte qualquer tecla ou\t 9- Voltar ao menu principal.");
+            if (continuar != 9){
+                RegistrosLogger.log(6007, user.getEmail(), false);
+                return;
+            }
+            RegistrosLogger.log(6002, user.getEmail(), false);
+            while(crtPath == null) {
+                crtPath = MyUtil.safeGetString("Caminho do arquivo do certificado digital (EXIT para cancelar): ");
+                if(crtPath.equals("EXIT")) return;
+                xHandler = nu.setCrtPath(crtPath);
+                if (xHandler == null) {
+                    RegistrosLogger.log(6004, user.getEmail(), false);
+                    crtPath = null;
+                }
+            }
+            password = getNewPassword(6003);
+            if(password.equals("")) { 
+                RegistrosLogger.log(6003, user.getEmail(), false);  
+                return;
+            }
+            while(grupo == null) {
+                HashMap<Integer, String> gruposPossiveis = NewUser.getGroupsOptions();
+                grupo = MyUtil.safeGetIntInput("Grupo: " + gruposPossiveis.toString());
+                if(gruposPossiveis.keySet().contains(grupo)) {
+                    nu.setGrupo(grupo);
+                }
+                else {
+                    grupo = null;
+                }
+            }
+            
+            System.out.println(xHandler.getConfirmationString());
+            selectedOption = MyUtil.safeGetIntInput("0- Cancelar\t9- Cadastrar");
+            if (selectedOption == 9) {
+                RegistrosLogger.log(6005, user.getEmail(), false);
+                if(!nu.saveToDb()) {
+                    System.out.println("Error!");
+                }
+            }
+            else {
+                RegistrosLogger.log(6006, user.getEmail(), false);
             }
         }
 
@@ -147,76 +180,68 @@ public class Console {
 
     public static void alterarSenhaPessoal() {
         X509CertificateHandler xHandler = null;
-        String firstPass = null;
         String cabecalho = String.format(Console.CABECALHO, user.getLoginName(), user.getGroupName(), user.getName());
         String corpo1 = String.format(Console.CORPO1, user.getTotalDeAcessos());
         String crtPath = null;
-        NewUser nu = new NewUser();
-        Boolean samePass = false;
         Integer selectedOption;
+        boolean changingPass = false;
         
         System.out.println(cabecalho);
         System.out.println(corpo1);
-        while(crtPath == null) {
-            System.out.println("Caminho do arquivo do certificado digital (EXIT para cancelar): ");
-            crtPath = sc.nextLine();
-            if(crtPath.equals("")) break;   // Nao vai mudar o certificado!
-            if(crtPath.equals("EXIT")) return;
-            xHandler = nu.setCrtPath(crtPath);
-            if (xHandler == null) {
-                crtPath = null;
+        RegistrosLogger.log(7001, user.getEmail(), false);
+        while(true) {
+            if(MyUtil.safeGetIntInput("Deseja alterar senha ou certificado? Aperte qualquer tecla ou\t9- Voltar ao menu") == 9) {
+                RegistrosLogger.log(7006, user.getEmail(), false);
+                return;
+            } 
+            while(crtPath == null) {
+                crtPath = MyUtil.safeGetString("Caminho do arquivo do certificado digital: ");
+                if(crtPath.equals("")) break;   // Nao vai mudar o certificado!
+                try{
+                    FileInputStream fis = new FileInputStream(crtPath);
+                    xHandler = new X509CertificateHandler(fis);
+                    fis.close();
+                } catch (IOException | CertificateException e) {
+                    RegistrosLogger.log(7003, user.getEmail(), false);
+                }
+                if (xHandler == null) {
+                    crtPath = null;
+                }
             }
-        }
+            
+            String password = getNewPassword(7002);
+            if(password == null || password.equals("")) password = null;
+            
+            if(xHandler != null) System.out.println(xHandler.getConfirmationString());
+            if(xHandler != null || changingPass) {
+                System.out.println("Trocou a senha: " + String.valueOf(changingPass).replace("true", "sim").replace("false", "nao"));
+                selectedOption = 1;
+                while(selectedOption != 9 && selectedOption != 0){
+                    selectedOption = MyUtil.safeGetIntInput("0- Voltar (Cancelar)\t9- Cadastrar");
+                    if(selectedOption == 9) {
+                        RegistrosLogger.log(7004, user.getEmail(), false);
 
-        while(!samePass) {
-            samePass = true;
-            System.out.println("Senha: ");
-            selectedOption = 1;
-            while(selectedOption != 0) {
-                System.out.println(PhoneticKeyBoard.phonemesPasswordAll() + "\t0-EXIT");
-                selectedOption = sc.nextInt();
-                if (selectedOption > 0 && selectedOption <= 18) {
-                    PhoneticKeyBoard.pressPhonema(selectedOption);
+                        user.updateUser(xHandler, password);
+                        user = null;
+                    }
+                    else if (selectedOption == 0){
+                        RegistrosLogger.log(7005, user.getEmail(), false);
+                    }
                 }
+                
             }
-            if(selectedOption == 0) {
-                // nao vai alterar a senha
-                break;
-            }
-            selectedOption = 1;
-            System.out.println("Confirmacao senha: ");
-            firstPass = PhoneticKeyBoard.getPassword();
-            while(selectedOption != 0) {
-                System.out.println(PhoneticKeyBoard.phonemesPasswordAll() + "\t0-EXIT");
-                selectedOption = sc.nextInt();
-                if (selectedOption > 0 && selectedOption <= 18) {
-                    PhoneticKeyBoard.pressPhonema(selectedOption);
-                }
-            }
-            String secondPass = PhoneticKeyBoard.getPassword();
-            if(!firstPass.equals(secondPass)) {
-                samePass = false;
-                System.out.println("Senhas nao coincidem!");
-            }
-        }
-        System.out.println(xHandler.getConfirmationString());
-        System.out.println("0- Cancelar\t9- Confirmar");
-        selectedOption = sc.nextInt();
-        if(selectedOption == 9) {
-            user.updateUser(xHandler, firstPass);
         }
 
     }
 
-    public static void consultarPastaDeArquivosSecretos(User u) {
+    public static void consultarPastaDeArquivosSecretos() {
         HashMap<Integer, String> indexFiles = new HashMap<Integer, String>();
         Path folderPath = null;
         String cabecalho = String.format(Console.CABECALHO, user.getLoginName(), user.getGroupName(), user.getName());
         String corpo1 = String.format("Total de consultas do usuário: %d", user.getTotalConsultasDeAcessos());
 
         while (folderPath == null || !folderPath.toFile().exists()) {
-            System.out.println("Caminho da pasta: ");
-            String inputPath =sc.nextLine();
+            String inputPath = MyUtil.safeGetString("Caminho da pasta: ");
             if(inputPath.equals("EXIT")) {
                 return;
             }
@@ -256,17 +281,18 @@ public class Console {
     public static User newUserFromEmail() {
         User u = null;
         while (u == null) {
-            System.out.println("Insira seu email:");
-            String userEmail = sc.nextLine();
+            String userEmail = MyUtil.safeGetString("Insira seu email:");
             u = new User(userEmail);
             if (!u.isValid()){
                 //usuario errado
+                RegistrosLogger.log(2005, userEmail, false);
                 u = null;
             } else if(u.isBlocked()){
-                System.out.println("USU BLOQ");
+                RegistrosLogger.log(2004, userEmail, true);
                 u = null;
             }
         }
+        RegistrosLogger.log(2003, u.getEmail(), false);
         return u;
     }
 
@@ -277,8 +303,7 @@ public class Console {
         while(tentativas < 3 && ! isPasswordValid){
             PhoneticKeyBoard keyBoard = new PhoneticKeyBoard();
             while(selectedOption != 7) {
-                System.out.println(keyBoard.getAsSingleString() + "7- END" + "\t0- EXIT");
-                selectedOption = sc.nextInt();
+                selectedOption = MyUtil.safeGetIntInput(keyBoard.getAsSingleString() + "7- END" + "\t0- EXIT");
                 if (selectedOption == 0) return false;
                 if (selectedOption > 0 && selectedOption < 7) {
                     keyBoard.pressGroup(selectedOption);
@@ -298,13 +323,16 @@ public class Console {
             if (!isPasswordValid){
                 //RegistrosLogger.log(3004, true);
                 tentativas+=1;
+                RegistrosLogger.log(3003 + tentativas, user.getEmail(), false);
                 if(tentativas >= 3){
+                    RegistrosLogger.log(3007, user.getEmail(), false);
                     user.blockUser();
                     return false;
                 }
                 System.out.println("TENTATIVA "+tentativas); //mensagem das tentativas  
             }
         }
+        RegistrosLogger.log(3003, user.getEmail(), false);
         return true;
     }
 
@@ -313,23 +341,28 @@ public class Console {
         boolean isValid = false;
 
         while (pkh == null){
-            System.out.println("Insira o path para sua chave privada: ");
-            String pathKey = sc.nextLine();
+            String pathKey = MyUtil.safeGetString("Insira o path para sua chave privada: ");
             if(pathKey == "EXIT") return false;
-            pkh = new PrivateKeyHandler(sc.nextLine());
+            try {
+                pkh = new PrivateKeyHandler(pathKey);
+            } catch (IOException e) {
+                RegistrosLogger.log(4004, user.getEmail(), false);
+            }
             if(! pkh.isInitialized()) {
                 pkh = null;
             } else {
-                System.out.println("Insira seu passphrase: ");
-                PrivateKey privateKey = pkh.getPrivateKey(sc.nextLine());
+                PrivateKey privateKey = pkh.getPrivateKey(MyUtil.safeGetPassword("Insira seu passphrase: "));
                 if(privateKey == null) {
                     pkh = null;
+                    RegistrosLogger.log(4005, user.getEmail(), false);
+
                 }
                 else {
                     user.setPrivateKey(privateKey);
                     try {
                         isValid = PrivateKeyHandler.isPrivateKeyValid(privateKey, user.getPublicKey());
-                        user.setPrivateKey(privateKey);
+                        if (!isValid) RegistrosLogger.log(4006, user.getEmail(), false);
+                        else user.setPrivateKey(privateKey);
                     } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
                         e.printStackTrace();
                         pkh = null;
@@ -337,27 +370,33 @@ public class Console {
                 }
             }
         }
+        if(isValid) RegistrosLogger.log(4003, user.getEmail(), false);
         return isValid;
     }
 
     public static void main(String args[]) {
-        while(true) {
-            //RegistrosLogger.log(1001, true); // Iniciado
+        boolean loop = true;
+        while(loop) {
+            RegistrosLogger.log(1001, false); // Iniciado
             int selectedOption = 0;
             
             System.out.println(HEADER);
 
+            RegistrosLogger.log(2001, false);
             if(user==null) user = newUserFromEmail();
+            RegistrosLogger.log(2002, false);
+            RegistrosLogger.log(3001, user.getEmail(), false);
             if(!userPassWord()) {
                 user = null;
                 continue;
             }
+            RegistrosLogger.log(3002, user.getEmail(), false);
+            RegistrosLogger.log(4001, user.getEmail(), false);
             if(!getPrivateKey()) {
                 user = null;
                 continue;
             }
-
-            RegistrosLogger.log(4002, true); // Fim aut 3
+            RegistrosLogger.log(4002, user.getEmail(), false);
 
             RegistrosLogger.log(4003, user.getLoginName(), true);
             String cabecalho = String.format(Console.CABECALHO, user.getLoginName(), user.getGroupName(), user.getName());
@@ -369,29 +408,34 @@ public class Console {
             while(selectedOption != 4) {
                 System.out.println(cabecalho);
                 System.out.println(corpo1);
-
+                RegistrosLogger.log(5001, user.getEmail(), false);
                 if(user.isAdmin()){
                     System.out.println(MENUPRINCIPALADMIN);
                 }
                 else {
                     System.out.println(MENUPRINCIPALUSUARIO);
                 }
-                selectedOption = sc.nextInt();
+                selectedOption = MyUtil.safeGetIntInput("");
                 if (!user.isAdmin() && selectedOption != 0) {
                     selectedOption = selectedOption + 1;
                 }
                 switch(selectedOption) {
                     case 1:
+                        RegistrosLogger.log(5002, user.getEmail(), false);
                         cadastrarUsuario(user);
                         break;
                     case 2:
+                        RegistrosLogger.log(5003, user.getEmail(), false);
                         alterarSenhaPessoal();
                         break;
                     case 3:
-                        consultarPastaDeArquivosSecretos(user);
+                        RegistrosLogger.log(5004, user.getEmail(), false);
+                        consultarPastaDeArquivosSecretos();
                         break;
                     case 4:
+                        RegistrosLogger.log(5005, user.getEmail(), false);
                         user = null;
+                        loop = false;
                         break;
                     default:
                         System.out.println("Opcao invalida!");
@@ -399,5 +443,6 @@ public class Console {
             }
 
         }
+        RegistrosLogger.log(1002, true);
     }
 }
