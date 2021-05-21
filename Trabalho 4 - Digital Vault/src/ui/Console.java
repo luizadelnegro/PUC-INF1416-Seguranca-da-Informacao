@@ -406,17 +406,27 @@ public class Console {
         return true;
     }
 
+
+    ////TODO
     public static boolean getPrivateKey() {
         PrivateKeyHandler pkh = null;
         boolean isValid = false;
+        int tentativas = 0;
 
         while (pkh == null){
             while(pkh==null) {
+                if(tentativas >= 3){
+                    RegistrosLogger.log(4007, user.getEmail(), false);
+                    user.blockUser();
+                    return false;
+                }
                 String pathKey = MyUtil.safeGetString("Insira o path para sua chave privada: ");
                 try {
                     pkh = new PrivateKeyHandler(pathKey);
                 } catch (IOException e) {
+                    tentativas+=1;
                     RegistrosLogger.log(4004, user.getEmail(), false);
+                    
                 }
             }
             if(! pkh.isInitialized()) {
@@ -425,6 +435,7 @@ public class Console {
                 PrivateKey privateKey = pkh.getPrivateKey(MyUtil.safeGetPassword("Insira seu passphrase: "));
                 if(privateKey == null) {
                     pkh = null;
+                    tentativas+=1;
                     RegistrosLogger.log(4005, user.getEmail(), true);
 
                 }
@@ -433,6 +444,7 @@ public class Console {
                     try {
                         isValid = PrivateKeyHandler.isPrivateKeyValid(privateKey, user.getPublicKey());
                         if (!isValid) {
+                            tentativas+=1;
                             RegistrosLogger.log(4006, user.getEmail(), false);
                             pkh= null;
                         }
@@ -476,7 +488,6 @@ public class Console {
             String cabecalho = String.format(Console.CABECALHO, user.getLoginName(), user.getGroupName(), user.getName());
             String corpo1 = String.format(Console.CORPO1, user.getTotalDeAcessos());
 
-            //RegistrosLogger.log(1002, true); // Finalizado
             
             selectedOption = 0;
             while(selectedOption != 4 && user!=null) {
