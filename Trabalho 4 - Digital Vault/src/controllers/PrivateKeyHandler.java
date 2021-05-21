@@ -89,7 +89,6 @@ public class PrivateKeyHandler {
             cipherMethod.init(Cipher.DECRYPT_MODE, publicK);
             decriptedDigest = cipherMethod.doFinal(sigPrivateK);
         } catch (IllegalBlockSizeException | InvalidKeyException | BadPaddingException e) {
-            e.printStackTrace();
             return false;
         }
 

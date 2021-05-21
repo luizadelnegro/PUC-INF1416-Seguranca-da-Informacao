@@ -286,10 +286,10 @@ public class Console {
             RegistrosLogger.log(8007, user.getEmail(), true);
             return;
         }
-        RegistrosLogger.log(8005, user.getEmail(), true);
+        RegistrosLogger.log(8005, user.getEmail(), false);
         try {
             dvf.isFileValid(indexDecrypted, user.getPublicKey());
-            RegistrosLogger.log(8006, user.getEmail(), true);
+            RegistrosLogger.log(8006, user.getEmail(), false);
         } catch(Exception e) {
             RegistrosLogger.log(8008, user.getEmail(), true);
         }
@@ -300,7 +300,7 @@ public class Console {
             for(int i=0; i<options.length; i++) {
                 System.out.println(Integer.toString(i + 1) + "- " + options[i]);
             }
-            RegistrosLogger.log(8009, user.getEmail(), true);
+            RegistrosLogger.log(8009, user.getEmail(), false);
             selectedOption = MyUtil.safeGetIntInput("0 - Voltar ao menu principal");
             if (selectedOption > 0 && selectedOption <= options.length){
                 Boolean canAccess = false;
@@ -311,7 +311,7 @@ public class Console {
                     canAccess = true;
                 }
                 if(canAccess) {
-                    RegistrosLogger.log(8011, user.getEmail(), row[1], true);
+                    RegistrosLogger.log(8011, user.getEmail(), row[1], false);
                     byte[] decFile = null;
                     Path fileEnv = Paths.get(folderPath.toString(), row[0] + ".env");
                     Path fileEnc = Paths.get(folderPath.toString(), row[0] + ".enc");
@@ -324,11 +324,11 @@ public class Console {
                         RegistrosLogger.log(8015, user.getEmail(), row[1], true);
                         continue;
                     }
-                    RegistrosLogger.log(8013, user.getEmail(), row[1], true);
+                    RegistrosLogger.log(8013, user.getEmail(), row[1], false);
                     try {
                         isFileIntegro = sdf.isFileValid(decFile, user.getPublicKey());
                     } catch(Exception e) {
-                        RegistrosLogger.log(8016, user.getEmail(), row[1], true);
+                        isFileIntegro = false;
                         continue;
                     }
                     if(!isFileIntegro) {
@@ -340,7 +340,7 @@ public class Console {
                         try {
                             FileOutputStream fos = new FileOutputStream(Paths.get(folderPath.toString(), row[1]).toString());
                             fos.write(decFile);
-                            System.out.println("WROTE! path= " + Paths.get(folderPath.toString(), row[1]).toString());
+                            System.out.println("Success! Decrypted to path= " + Paths.get(folderPath.toString(), row[1]).toString());
                     
                         } catch (IOException e) {
                             e.printStackTrace();
