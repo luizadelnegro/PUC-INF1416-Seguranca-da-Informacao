@@ -316,6 +316,7 @@ public class Console {
                     Path fileEnv = Paths.get(folderPath.toString(), row[0] + ".env");
                     Path fileEnc = Paths.get(folderPath.toString(), row[0] + ".enc");
                     Path fileAsd = Paths.get(folderPath.toString(), row[0] + ".asd");
+                    boolean isFileIntegro = false;
                     DigitalVaultFile sdf = new DigitalVaultFile(fileEnv.toString(), fileEnc.toString(), fileAsd.toString());
                     try {
                         decFile = sdf.decrypt(user.getPrivateKey());
@@ -325,20 +326,27 @@ public class Console {
                     }
                     RegistrosLogger.log(8013, user.getEmail(), row[1], true);
                     try {
-                        sdf.isFileValid(decFile, user.getPublicKey());
+                        isFileIntegro = sdf.isFileValid(decFile, user.getPublicKey());
                     } catch(Exception e) {
                         RegistrosLogger.log(8016, user.getEmail(), row[1], true);
                         continue;
                     }
-                    RegistrosLogger.log(8014, user.getEmail(), row[1], true);
-                    try {
-                        FileOutputStream fos = new FileOutputStream(Paths.get(folderPath.toString(), row[1]).toString());
-                        fos.write(decFile);
-                        System.out.println("WROTE! path= " + Paths.get(folderPath.toString(), row[1]).toString());
-                
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    if(!isFileIntegro) {
+                        RegistrosLogger.log(8016, user.getEmail(), row[1], true);
                     }
+                    
+                    else{
+                        RegistrosLogger.log(8014, user.getEmail(), row[1], false);
+                        try {
+                            FileOutputStream fos = new FileOutputStream(Paths.get(folderPath.toString(), row[1]).toString());
+                            fos.write(decFile);
+                            System.out.println("WROTE! path= " + Paths.get(folderPath.toString(), row[1]).toString());
+                    
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    
                 }
                 else {
                     RegistrosLogger.log(8012, user.getEmail(), row[1], true);
