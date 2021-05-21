@@ -128,15 +128,15 @@ public class Console {
         System.out.println(cabecalho);
         System.out.println(corpo1);
 
-        RegistrosLogger.log(6001, user.getEmail(), true);
+        RegistrosLogger.log(6001, user.getEmail(), false);
         System.out.println("Formulario de cadastro: \n");
         while(true){
             int continuar = MyUtil.safeGetIntInput("Deseja cadastrar um novo usuario? Aperte qualquer tecla ou\t 9- Voltar ao menu principal.");
             if (continuar == 9){
-                RegistrosLogger.log(6007, user.getEmail(), true);
+                RegistrosLogger.log(6007, user.getEmail(), false);
                 return;
             }
-            RegistrosLogger.log(6002, user.getEmail(), true);
+            RegistrosLogger.log(6002, user.getEmail(), false);
             while(crtPath == null) {
                 crtPath = MyUtil.safeGetString("Caminho do arquivo do certificado digital (EXIT para cancelar): ");
                 if(crtPath.equals("EXIT")) return;
@@ -166,13 +166,13 @@ public class Console {
             System.out.println(xHandler.getConfirmationString());
             selectedOption = MyUtil.safeGetIntInput("0- Cancelar\t9- Cadastrar");
             if (selectedOption == 9) {
-                RegistrosLogger.log(6005, user.getEmail(), true);
+                RegistrosLogger.log(6005, user.getEmail(), false);
                 if(!nu.saveToDb()) {
                     System.out.println("Error!");
                 }
             }
             else {
-                RegistrosLogger.log(6006, user.getEmail(), true);
+                RegistrosLogger.log(6006, user.getEmail(), false);
             }
         }
 
@@ -189,11 +189,11 @@ public class Console {
         
         System.out.println(cabecalho);
         System.out.println(corpo1);
-        RegistrosLogger.log(7001, user.getEmail(), true);
+        RegistrosLogger.log(7001, user.getEmail(), false);
         String oldUserEmail = user.getEmail();
         while(true) {
             if(MyUtil.safeGetIntInput("Deseja alterar senha ou certificado? Aperte qualquer tecla ou\t9- Voltar ao menu") == 9) {
-                RegistrosLogger.log(7006, oldUserEmail, true);
+                RegistrosLogger.log(7006, oldUserEmail, false);
                 return changingCert;
             } 
             while(crtPath == null) {
@@ -224,11 +224,11 @@ public class Console {
                 while(selectedOption != 9 && selectedOption != 0){
                     selectedOption = MyUtil.safeGetIntInput("0- Voltar (Cancelar)\t9- Cadastrar");
                     if(selectedOption == 9) {
-                        RegistrosLogger.log(7004, user.getEmail(), true);
+                        RegistrosLogger.log(7004, user.getEmail(), false);
                         user.updateUser(xHandler, password);
                     }
                     else if (selectedOption == 0){
-                        RegistrosLogger.log(7005, user.getEmail(), true);
+                        RegistrosLogger.log(7005, user.getEmail(), false);
                     }
                 }
                 
@@ -243,12 +243,12 @@ public class Console {
         byte[] indexDecrypted = null;
         String cabecalho = String.format(Console.CABECALHO, user.getLoginName(), user.getGroupName(), user.getName());
         String corpo1 = String.format("Total de consultas do usuário: %d", user.getTotalConsultasDeAcessos());
-        RegistrosLogger.log(8001, user.getEmail(), true);
+        RegistrosLogger.log(8001, user.getEmail(), false);
 
         while (folderPath == null || !folderPath.toFile().exists()) {
             String inputPath = MyUtil.safeGetString("Caminho da pasta: \t'EXIT'- Para voltar ao menu principal");
             if(inputPath.equals("EXIT")) {
-                RegistrosLogger.log(8002, user.getEmail(), true);
+                RegistrosLogger.log(8002, user.getEmail(), false);
                 return;
             }
             folderPath = Paths.get(inputPath);
@@ -305,7 +305,7 @@ public class Console {
             if (selectedOption > 0 && selectedOption <= options.length){
                 Boolean canAccess = false;
                 String[] row = options[selectedOption-1].split(" ");
-                RegistrosLogger.log(8010, user.getEmail(), row[0], true);
+                RegistrosLogger.log(8010, user.getEmail(), row[0], false);
                 if(row[2].equals(user.getEmail()) || row[3].equals(user.getGroupName())) {
                     // Invalid permission
                     canAccess = true;
@@ -346,7 +346,7 @@ public class Console {
 
             }
         }
-        RegistrosLogger.log(8002, user.getEmail(), true);
+        RegistrosLogger.log(8002, user.getEmail(), false);
     }
 
     public static User newUserFromEmail() {
@@ -363,7 +363,7 @@ public class Console {
                 u = null;
             }
         }
-        RegistrosLogger.log(2003, u.getEmail(), true);
+        RegistrosLogger.log(2003, u.getEmail(), false);
         return u;
     }
 
@@ -395,14 +395,14 @@ public class Console {
                 tentativas+=1;
                 RegistrosLogger.log(3003 + tentativas, user.getEmail(), false);
                 if(tentativas >= 3){
-                    RegistrosLogger.log(3007, user.getEmail(), false);
+                    RegistrosLogger.log(3007, user.getEmail(), true);
                     user.blockUser();
                     return false;
                 }
                 System.out.println("TENTATIVA "+tentativas); //mensagem das tentativas  
             }
         }
-        RegistrosLogger.log(3003, user.getEmail(), false);
+        RegistrosLogger.log(3003, user.getEmail(), true);
         return true;
     }
 
@@ -416,7 +416,8 @@ public class Console {
         while (pkh == null){
             while(pkh==null) {
                 if(tentativas >= 3){
-                    RegistrosLogger.log(4007, user.getEmail(), false);
+                    System.out.println("DPS DO IF TENTATIVA "+tentativas);
+                    RegistrosLogger.log(4007, user.getEmail(), true);
                     user.blockUser();
                     return false;
                 }
@@ -425,7 +426,8 @@ public class Console {
                     pkh = new PrivateKeyHandler(pathKey);
                 } catch (IOException e) {
                     tentativas+=1;
-                    RegistrosLogger.log(4004, user.getEmail(), false);
+                    System.out.println("TENTATIVA "+tentativas);
+                    RegistrosLogger.log(4004, user.getEmail(), true);
                     
                 }
             }
@@ -436,6 +438,7 @@ public class Console {
                 if(privateKey == null) {
                     pkh = null;
                     tentativas+=1;
+                    System.out.println("TENTATIVA "+tentativas);
                     RegistrosLogger.log(4005, user.getEmail(), true);
 
                 }
@@ -445,7 +448,8 @@ public class Console {
                         isValid = PrivateKeyHandler.isPrivateKeyValid(privateKey, user.getPublicKey());
                         if (!isValid) {
                             tentativas+=1;
-                            RegistrosLogger.log(4006, user.getEmail(), false);
+                            System.out.println("TENTATIVA "+tentativas);
+                            RegistrosLogger.log(4006, user.getEmail(), true);
                             pkh= null;
                         }
                         else user.setPrivateKey(privateKey);
@@ -456,7 +460,7 @@ public class Console {
                 }
             }
         }
-        if(isValid) RegistrosLogger.log(4003, user.getEmail(), false);
+        if(isValid) RegistrosLogger.log(4003, user.getEmail(), true);
         return isValid;
     }
 
@@ -484,7 +488,7 @@ public class Console {
             }
             RegistrosLogger.log(4002, user.getEmail(), false);
 
-            RegistrosLogger.log(4003, user.getLoginName(), true);
+            RegistrosLogger.log(4003, user.getLoginName(), false);
             String cabecalho = String.format(Console.CABECALHO, user.getLoginName(), user.getGroupName(), user.getName());
             String corpo1 = String.format(Console.CORPO1, user.getTotalDeAcessos());
 
