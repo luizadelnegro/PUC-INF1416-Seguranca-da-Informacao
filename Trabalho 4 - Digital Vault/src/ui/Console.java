@@ -128,27 +128,27 @@ public class Console {
         System.out.println(cabecalho);
         System.out.println(corpo1);
 
-        RegistrosLogger.log(6001, user.getEmail(), false);
+        RegistrosLogger.log(6001, user.getEmail(), true);
         System.out.println("Formulario de cadastro: \n");
         while(true){
             int continuar = MyUtil.safeGetIntInput("Deseja cadastrar um novo usuario? Aperte qualquer tecla ou\t 9- Voltar ao menu principal.");
             if (continuar == 9){
-                RegistrosLogger.log(6007, user.getEmail(), false);
+                RegistrosLogger.log(6007, user.getEmail(), true);
                 return;
             }
-            RegistrosLogger.log(6002, user.getEmail(), false);
+            RegistrosLogger.log(6002, user.getEmail(), true);
             while(crtPath == null) {
                 crtPath = MyUtil.safeGetString("Caminho do arquivo do certificado digital (EXIT para cancelar): ");
                 if(crtPath.equals("EXIT")) return;
                 xHandler = nu.setCrtPath(crtPath);
                 if (xHandler == null) {
-                    RegistrosLogger.log(6004, user.getEmail(), false);
+                    RegistrosLogger.log(6004, user.getEmail(), true);
                     crtPath = null;
                 }
             }
             password = getNewPassword(6003);
             if(password.equals("")) { 
-                RegistrosLogger.log(6003, user.getEmail(), false);  
+                RegistrosLogger.log(6003, user.getEmail(), true);  
                 return;
             }
             nu.setPassword(password);
@@ -166,13 +166,13 @@ public class Console {
             System.out.println(xHandler.getConfirmationString());
             selectedOption = MyUtil.safeGetIntInput("0- Cancelar\t9- Cadastrar");
             if (selectedOption == 9) {
-                RegistrosLogger.log(6005, user.getEmail(), false);
+                RegistrosLogger.log(6005, user.getEmail(), true);
                 if(!nu.saveToDb()) {
                     System.out.println("Error!");
                 }
             }
             else {
-                RegistrosLogger.log(6006, user.getEmail(), false);
+                RegistrosLogger.log(6006, user.getEmail(), true);
             }
         }
 
@@ -189,11 +189,11 @@ public class Console {
         
         System.out.println(cabecalho);
         System.out.println(corpo1);
-        RegistrosLogger.log(7001, user.getEmail(), false);
+        RegistrosLogger.log(7001, user.getEmail(), true);
         String oldUserEmail = user.getEmail();
         while(true) {
             if(MyUtil.safeGetIntInput("Deseja alterar senha ou certificado? Aperte qualquer tecla ou\t9- Voltar ao menu") == 9) {
-                RegistrosLogger.log(7006, oldUserEmail, false);
+                RegistrosLogger.log(7006, oldUserEmail, true);
                 return changingCert;
             } 
             while(crtPath == null) {
@@ -204,7 +204,7 @@ public class Console {
                     xHandler = new X509CertificateHandler(fis);
                     fis.close();
                 } catch (IOException | CertificateException e) {
-                    RegistrosLogger.log(7003, user.getEmail(), false);
+                    RegistrosLogger.log(7003, user.getEmail(), true);
                 }
                 if (xHandler == null) {
                     crtPath = null;
@@ -224,11 +224,11 @@ public class Console {
                 while(selectedOption != 9 && selectedOption != 0){
                     selectedOption = MyUtil.safeGetIntInput("0- Voltar (Cancelar)\t9- Cadastrar");
                     if(selectedOption == 9) {
-                        RegistrosLogger.log(7004, user.getEmail(), false);
+                        RegistrosLogger.log(7004, user.getEmail(), true);
                         user.updateUser(xHandler, password);
                     }
                     else if (selectedOption == 0){
-                        RegistrosLogger.log(7005, user.getEmail(), false);
+                        RegistrosLogger.log(7005, user.getEmail(), true);
                     }
                 }
                 
@@ -243,19 +243,19 @@ public class Console {
         byte[] indexDecrypted = null;
         String cabecalho = String.format(Console.CABECALHO, user.getLoginName(), user.getGroupName(), user.getName());
         String corpo1 = String.format("Total de consultas do usuário: %d", user.getTotalConsultasDeAcessos());
-        RegistrosLogger.log(8001, user.getEmail(), false);
+        RegistrosLogger.log(8001, user.getEmail(), true);
 
         while (folderPath == null || !folderPath.toFile().exists()) {
             String inputPath = MyUtil.safeGetString("Caminho da pasta: \t'EXIT'- Para voltar ao menu principal");
             if(inputPath.equals("EXIT")) {
-                RegistrosLogger.log(8002, user.getEmail(), false);
+                RegistrosLogger.log(8002, user.getEmail(), true);
                 return;
             }
             folderPath = Paths.get(inputPath);
             if(folderPath.toFile().exists()) {
-                if (!folderPath.toFile().isDirectory()) RegistrosLogger.log(8004, user.getEmail(), false);
+                if (!folderPath.toFile().isDirectory()) RegistrosLogger.log(8004, user.getEmail(), true);
             }
-            else RegistrosLogger.log(8004, user.getEmail(), false);
+            else RegistrosLogger.log(8004, user.getEmail(), true);
         }
         
         for (File file : folderPath.toFile().listFiles()) {
@@ -283,15 +283,15 @@ public class Console {
         try {
             indexDecrypted = dvf.decrypt(user.getPrivateKey());
         } catch(Exception e) {
-            RegistrosLogger.log(8007, user.getEmail(), false);
+            RegistrosLogger.log(8007, user.getEmail(), true);
             return;
         }
-        RegistrosLogger.log(8005, user.getEmail(), false);
+        RegistrosLogger.log(8005, user.getEmail(), true);
         try {
             dvf.isFileValid(indexDecrypted, user.getPublicKey());
-            RegistrosLogger.log(8006, user.getEmail(), false);
+            RegistrosLogger.log(8006, user.getEmail(), true);
         } catch(Exception e) {
-            RegistrosLogger.log(8008, user.getEmail(), false);
+            RegistrosLogger.log(8008, user.getEmail(), true);
         }
         int selectedOption = -1;
         while(selectedOption != 0) {
@@ -300,18 +300,18 @@ public class Console {
             for(int i=0; i<options.length; i++) {
                 System.out.println(Integer.toString(i + 1) + "- " + options[i]);
             }
-            RegistrosLogger.log(8009, user.getEmail(), false);
+            RegistrosLogger.log(8009, user.getEmail(), true);
             selectedOption = MyUtil.safeGetIntInput("0 - Voltar ao menu principal");
             if (selectedOption > 0 && selectedOption <= options.length){
                 Boolean canAccess = false;
                 String[] row = options[selectedOption-1].split(" ");
-                RegistrosLogger.log(8010, user.getEmail(), row[0], false);
+                RegistrosLogger.log(8010, user.getEmail(), row[0], true);
                 if(row[2].equals(user.getEmail()) || row[3].equals(user.getGroupName())) {
                     // Invalid permission
                     canAccess = true;
                 }
                 if(canAccess) {
-                    RegistrosLogger.log(8011, user.getEmail(), row[1], false);
+                    RegistrosLogger.log(8011, user.getEmail(), row[1], true);
                     byte[] decFile = null;
                     Path fileEnv = Paths.get(folderPath.toString(), row[0] + ".env");
                     Path fileEnc = Paths.get(folderPath.toString(), row[0] + ".enc");
@@ -320,17 +320,17 @@ public class Console {
                     try {
                         decFile = sdf.decrypt(user.getPrivateKey());
                     } catch(Exception e) {
-                        RegistrosLogger.log(8015, user.getEmail(), row[1], false);
+                        RegistrosLogger.log(8015, user.getEmail(), row[1], true);
                         continue;
                     }
-                    RegistrosLogger.log(8013, user.getEmail(), row[1], false);
+                    RegistrosLogger.log(8013, user.getEmail(), row[1], true);
                     try {
                         sdf.isFileValid(decFile, user.getPublicKey());
                     } catch(Exception e) {
-                        RegistrosLogger.log(8016, user.getEmail(), row[1], false);
+                        RegistrosLogger.log(8016, user.getEmail(), row[1], true);
                         continue;
                     }
-                    RegistrosLogger.log(8014, user.getEmail(), row[1], false);
+                    RegistrosLogger.log(8014, user.getEmail(), row[1], true);
                     try {
                         FileOutputStream fos = new FileOutputStream(Paths.get(folderPath.toString(), row[1]).toString());
                         fos.write(decFile);
@@ -341,12 +341,12 @@ public class Console {
                     }
                 }
                 else {
-                    RegistrosLogger.log(8012, user.getEmail(), row[1], false);
+                    RegistrosLogger.log(8012, user.getEmail(), row[1], true);
                 }
 
             }
         }
-        RegistrosLogger.log(8002, user.getEmail(), false);
+        RegistrosLogger.log(8002, user.getEmail(), true);
     }
 
     public static User newUserFromEmail() {
@@ -356,14 +356,14 @@ public class Console {
             u = new User(userEmail);
             if (!u.isValid()){
                 //usuario errado
-                RegistrosLogger.log(2005, userEmail, false);
+                RegistrosLogger.log(2005, userEmail, true);
                 u = null;
             } else if(u.isBlocked()){
                 RegistrosLogger.log(2004, userEmail, true);
                 u = null;
             }
         }
-        RegistrosLogger.log(2003, u.getEmail(), false);
+        RegistrosLogger.log(2003, u.getEmail(), true);
         return u;
     }
 
